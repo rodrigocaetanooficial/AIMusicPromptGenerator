@@ -78,7 +78,11 @@ export default function Home() {
     setIsLoadingModels(true);
     try {
       const response = await fetch(
-        `/api/models?provider=${provider}&apiKey=${encodeURIComponent(apiKey)}`
+        `/api/models`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ provider, apiKey }),
+        }
       );
       const data = await response.json();
 

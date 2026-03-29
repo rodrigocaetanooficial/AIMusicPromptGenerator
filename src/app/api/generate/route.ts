@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
+const generationSchema = z.object({
+  input: z.string().min(3, "Input must be at least 3 characters").max(2000, "Input is too long"),
+  count: z.number().int().min(1).max(10),
+  temperature: z.number().min(0).max(2),
+  provider: z.string().min(1),
+  apiKey: z.string().optional(),
+  model: z.string().min(1),
+});
 
 interface GenerateRequest {
   input: string;
@@ -158,7 +167,7 @@ async function generateWithOpenAICompatible(
       }
     } catch {
       if (errorText.includes('Forbidden') || response.status === 403) {
-        errorMessage = 'Access forbidden. Your API key may be invalid, expired, or restricted. Please check your Groq dashboard.';
+        errorMessage = 'Access forbidden. Your API key may be invalid, expired, or restricted. Please check your dashboard.';
       } else if (response.status === 401) {
         errorMessage = 'Invalid API key. Please verify your credentials.';
       } else if (response.status === 429) {
@@ -176,22 +185,17 @@ async function generateWithOpenAICompatible(
 
 export async function POST(request: NextRequest) {
   try {
-    const body: GenerateRequest = await request.json();
-    const { input, count, temperature, provider, apiKey, model } = body;
+    const rawBody = await request.json();
+    const result = generationSchema.safeParse(rawBody);
 
-    if (!input || input.trim().length < 3) {
+    if (!result.success) {
       return NextResponse.json(
-        { prompts: [], error: "Input must be at least 3 characters" },
+        { prompts: [], error: result.error.errors[0].message || "Invalid input parameters." },
         { status: 400 }
       );
     }
 
-    if (count < 1 || count > 10) {
-      return NextResponse.json(
-        { prompts: [], error: "Count must be between 1 and 10" },
-        { status: 400 }
-      );
-    }
+    const { input, count, temperature, provider, apiKey, model } = result.data;
 
     let prompts: GeneratedPrompt[];
 
