@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { models: [], error: result.error.errors[0].message || "Invalid input parameters." },
+        { models: [], error: result.error.issues[0]?.message || "Invalid parameters" },
         { status: 400 }
       );
     }

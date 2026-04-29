@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { prompts: [], error: result.error.errors[0].message || "Invalid input parameters." },
+        { prompts: [], error: result.error.issues[0]?.message || "Invalid input parameters." },
         { status: 400 }
       );
     }
