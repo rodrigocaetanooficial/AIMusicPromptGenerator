@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { providers } from "@/lib/types";
 
 const generationSchema = z.object({
   input: z.string().min(3, "Input must be at least 3 characters").max(2000, "Input is too long"),
@@ -120,15 +121,13 @@ async function generateWithOpenAICompatible(
   apiKey: string,
   model: string
 ): Promise<GeneratedPrompt[]> {
-  const baseUrls: Record<string, string> = {
-    openrouter: "https://openrouter.ai/api/v1",
-    groq: "https://api.groq.com/openai/v1",
-  };
-
-  const baseUrl = baseUrls[provider];
-  if (!baseUrl) {
+  const providerConfig = providers.find(p => p.id === provider);
+  
+  if (!providerConfig) {
     throw new Error(`Unknown provider: ${provider}`);
   }
+
+  const baseUrl = providerConfig.baseUrl;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

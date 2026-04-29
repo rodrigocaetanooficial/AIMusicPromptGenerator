@@ -12,47 +12,113 @@ export interface Model {
   id: string;
   name: string;
   description?: string;
-  isCustom?: boolean; // User-added model
 }
 
-// Default models for each provider
-const OPENROUTER_MODELS: Model[] = [
-  { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
-  { id: "anthropic/claude-3-opus", name: "Claude 3 Opus" },
-  { id: "openai/gpt-4o", name: "GPT-4o" },
-  { id: "openai/gpt-4o-mini", name: "GPT-4o Mini" },
-  { id: "google/gemini-pro-1.5", name: "Gemini Pro 1.5" },
-  { id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
-  { id: "meta-llama/llama-3.1-8b-instruct", name: "Llama 3.1 8B" },
-  { id: "mistralai/mistral-large", name: "Mistral Large" },
-];
-
-const GROQ_MODELS: Model[] = [
-  { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B Versatile" },
-  { id: "llama-3.1-70b-versatile", name: "Llama 3.1 70B Versatile" },
-  { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B Instant" },
-  { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B" },
-  { id: "gemma2-9b-it", name: "Gemma 2 9B" },
-  { id: "distil-whisper-large-v3-en", name: "Distil Whisper Large V3 EN" },
-];
-
-// Available AI providers
+// Available AI providers (OpenAI compatible)
 export const providers: Provider[] = [
   {
     id: "openrouter",
     name: "OpenRouter",
     baseUrl: "https://openrouter.ai/api/v1",
     requiresApiKey: true,
-    models: OPENROUTER_MODELS,
-    supportsModelListing: false,
+    models: [],
+    supportsModelListing: true,
   },
   {
     id: "groq",
     name: "Groq",
     baseUrl: "https://api.groq.com/openai/v1",
     requiresApiKey: true,
-    models: GROQ_MODELS,
-    supportsModelListing: true, // Groq supports /models endpoint
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "openai",
+    name: "OpenAI",
+    baseUrl: "https://api.openai.com/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "deepseek",
+    name: "DeepSeek",
+    baseUrl: "https://api.deepseek.com",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "nvidia",
+    name: "NVIDIA NIM",
+    baseUrl: "https://integrate.api.nvidia.com/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "xai",
+    name: "X.AI (Grok)",
+    baseUrl: "https://api.x.ai/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "perplexity",
+    name: "Perplexity",
+    baseUrl: "https://api.perplexity.ai",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "together",
+    name: "Together AI",
+    baseUrl: "https://api.together.xyz/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "fireworks",
+    name: "Fireworks AI",
+    baseUrl: "https://api.fireworks.ai/inference/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "mistral",
+    name: "Mistral",
+    baseUrl: "https://api.mistral.ai/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "cerebras",
+    name: "Cerebras",
+    baseUrl: "https://api.cerebras.ai/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "deepinfra",
+    name: "DeepInfra",
+    baseUrl: "https://api.deepinfra.com/v1/openai",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
+    id: "sambanova",
+    name: "SambaNova",
+    baseUrl: "https://api.sambanova.ai/v1",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
   },
 ];
 
@@ -62,7 +128,6 @@ export interface Settings {
   apiKey: string;
   model: string;
   theme: "light" | "dark" | "system";
-  customModels: Record<string, Model[]>; // Provider ID -> custom models
 }
 
 // Generated prompt structure

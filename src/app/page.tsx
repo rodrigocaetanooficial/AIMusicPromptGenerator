@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "next-themes";
-import { Settings, Copy, Check, Sparkles, Loader2, Music, Moon, Sun, Plus, X, RefreshCw } from "lucide-react";
+import { Settings, Copy, Check, Sparkles, Loader2, Music, Moon, Sun, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { providers, type GeneratedPrompt, type Model } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
@@ -38,12 +37,9 @@ export default function Home() {
     provider,
     apiKey,
     model,
-    customModels,
     setProvider,
     setApiKey,
     setModel,
-    addCustomModel,
-    removeCustomModel,
     getAllModels,
   } = useAppStore();
 
@@ -57,8 +53,6 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [fetchedModels, setFetchedModels] = useState<Model[]>([]);
-  const [newModelId, setNewModelId] = useState("");
-  const [newModelName, setNewModelName] = useState("");
 
   // Ensure hydration matches
   useEffect(() => {
@@ -70,7 +64,7 @@ export default function Home() {
   const allModels = getAllModels(provider);
 
   // Fetch models from API
-  const fetchModels = useCallback(async () => {
+  const fetchModels = useCallback(async (silent = false) => {
     if (!selectedProvider?.supportsModelListing || !apiKey) {
       return;
     }
@@ -87,31 +81,52 @@ export default function Home() {
       const data = await response.json();
 
       if (data.error) {
-        toast({
-          title: "Failed to fetch models",
-          description: data.error,
-          variant: "destructive",
-        });
+        if (!silent) {
+          toast({
+            title: "Failed to fetch models",
+            description: data.error,
+            variant: "destructive",
+          });
+        }
         return;
       }
 
       setFetchedModels(data.models);
-      toast({
-        title: "Models loaded",
-        description: `Found ${data.models.length} models`,
-      });
+      
+      // Auto-select first model if current model is empty or invalid
+      if (!model || !data.models.find((m: Model) => m.id === model)) {
+        if (data.models.length > 0) {
+          setModel(data.models[0].id);
+        }
+      }
+
+      if (!silent) {
+        toast({
+          title: "Models loaded",
+          description: `Found ${data.models.length} models`,
+        });
+      }
     } catch (error) {
-      toast({
-        title: "Failed to fetch models",
-        description: "Could not load models from API",
-        variant: "destructive",
-      });
+      if (!silent) {
+        toast({
+          title: "Failed to fetch models",
+          description: "Could not load models from API",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoadingModels(false);
     }
-  }, [provider, apiKey, selectedProvider, toast]);
+  }, [provider, apiKey, selectedProvider, model, setModel, toast]);
 
-  // Combine default, custom, and fetched models
+  // Auto-fetch models when provider or API key changes
+  useEffect(() => {
+    if (apiKey && selectedProvider?.supportsModelListing) {
+      fetchModels(true);
+    }
+  }, [provider, apiKey, selectedProvider, fetchModels]);
+
+  // Combine default and fetched models
   const displayModels = [...allModels, ...fetchedModels.filter(
     (fm) => !allModels.some((am) => am.id === fm.id)
   )];
@@ -181,39 +196,6 @@ export default function Home() {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       handleGenerate();
     }
-  };
-
-  const handleAddCustomModel = () => {
-    if (!newModelId.trim()) {
-      toast({
-        title: "Model ID required",
-        description: "Please enter a model ID",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    addCustomModel(provider, {
-      id: newModelId.trim(),
-      name: newModelName.trim() || newModelId.trim(),
-      isCustom: true,
-    });
-
-    toast({
-      title: "Model added",
-      description: `${newModelId} added to ${selectedProvider?.name}`,
-    });
-
-    setNewModelId("");
-    setNewModelName("");
-  };
-
-  const handleRemoveCustomModel = (modelId: string) => {
-    removeCustomModel(provider, modelId);
-    toast({
-      title: "Model removed",
-      description: `${modelId} removed from ${selectedProvider?.name}`,
-    });
   };
 
   if (!mounted) {
@@ -303,7 +285,7 @@ export default function Home() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={fetchModels}
+                    onClick={() => fetchModels(false)}
                     disabled={isLoadingModels}
                     className="w-full"
                   >
@@ -319,87 +301,20 @@ export default function Home() {
                 {/* Model Selection */}
                 <div className="space-y-2">
                   <Label>Model</Label>
-                  <Select value={model} onValueChange={setModel}>
+                  <Select value={model} onValueChange={setModel} disabled={displayModels.length === 0}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select model" />
+                      <SelectValue placeholder={displayModels.length === 0 ? "Enter API key to load models" : "Select model"} />
                     </SelectTrigger>
                     <SelectContent>
                       {displayModels.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
-                          <div className="flex items-center gap-2">
-                            <span>{m.name}</span>
-                            {m.isCustom && (
-                              <Badge variant="secondary" className="text-xs">
-                                Custom
-                              </Badge>
-                            )}
-                          </div>
+                          {m.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Custom Models Section */}
-                {selectedProvider?.requiresApiKey && (
-                  <>
-                    <Separator />
-                    <div className="space-y-3">
-                      <Label className="text-base">Custom Models</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Add custom models not listed above (e.g., preview models)
-                      </p>
-
-                      {/* Existing custom models */}
-                      {(customModels[provider] || []).length > 0 && (
-                        <div className="space-y-2">
-                          {customModels[provider].map((m) => (
-                            <div
-                              key={m.id}
-                              className="flex items-center justify-between p-2 rounded-md bg-muted/50"
-                            >
-                              <div>
-                                <p className="text-sm font-medium">{m.name}</p>
-                                <p className="text-xs text-muted-foreground">{m.id}</p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleRemoveCustomModel(m.id)}
-                                className="h-8 w-8"
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Add new model */}
-                      <div className="grid gap-2">
-                        <Input
-                          placeholder="Model ID (e.g., moonshotai/kimi-k2-instruct-0905)"
-                          value={newModelId}
-                          onChange={(e) => setNewModelId(e.target.value)}
-                        />
-                        <Input
-                          placeholder="Display name (optional)"
-                          value={newModelName}
-                          onChange={(e) => setNewModelName(e.target.value)}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleAddCustomModel}
-                          disabled={!newModelId.trim()}
-                        >
-                          <Plus className="w-4 h-4" />
-                          Add Custom Model
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                )}
               </div>
             </DialogContent>
           </Dialog>
@@ -462,7 +377,7 @@ export default function Home() {
         <Button
           className="w-full h-12 text-base font-semibold"
           onClick={handleGenerate}
-          disabled={isGenerating || input.trim().length < 3}
+          disabled={isGenerating || input.trim().length < 3 || !model}
         >
           {isGenerating ? (
             <>

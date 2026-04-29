@@ -1,18 +1,28 @@
 # AI Music Prompt Generator 🎵
 
-A powerful and intuitive web application designed to help musicians, producers, and AI enthusiasts create highly detailed, production-ready prompts for AI music generators like **Suno**, **Udio**, and others.
+A powerful, intuitive, and highly customizable web application designed to help musicians, producers, and AI enthusiasts create detailed, production-ready prompts for AI music generators like **Suno**, **Udio**, and others.
 
 ---
 
 ## ✨ Features
 
 - **Detailed Prompt Generation**: Automatically generates rich prompts covering rhythm, style, and technical details.
-- **Multiple Providers**: Support for **OpenRouter** and **Groq** APIs.
-- **Model Customization**: Use pre-defined industry-leading models (Claude 3.5, GPT-4o, Llama 3.3, etc.) or add your own custom model IDs.
+- **Universal Provider Support**: Natively supports multiple industry-leading AI API providers:
+  - OpenAI
+  - NVIDIA NIM
+  - DeepSeek
+  - Mistral
+  - Together AI
+  - Groq
+  - OpenRouter
+  - Perplexity
+  - Fireworks AI
+  - And more!
+- **Auto-Fetch Models**: Simply select a provider and enter your API Key to instantly fetch and list all available models dynamically.
 - **Precise Controls**: Adjust the number of prompts and creativity (temperature) for each generation.
 - **No Placeholders**: Prompts are structured with specific musical terminology (BPM, instruments, production techniques).
 - **Dark Mode Support**: Sleek, modern interface that's easy on the eyes.
-- **Privacy Focused**: Your API keys are stored locally in your browser and never sent to our servers.
+- **Privacy Focused**: Your API keys are stored securely in your browser's local storage and are never sent to any external server other than the provider's API.
 
 ---
 
@@ -21,7 +31,7 @@ A powerful and intuitive web application designed to help musicians, producers, 
 ### Prerequisites
 
 - [Bun](https://bun.sh/) or [Node.js](https://nodejs.org/)
-- An API Key from [OpenRouter](https://openrouter.ai/) or [Groq](https://console.groq.com/)
+- An API Key from your preferred provider (e.g., OpenAI, Groq, OpenRouter, etc.)
 
 ### Installation
 
@@ -33,16 +43,16 @@ A powerful and intuitive web application designed to help musicians, producers, 
 
 2. Install dependencies:
    ```bash
-   bun install
-   # or
    npm install
+   # or
+   bun install
    ```
 
 3. Run the development server:
    ```bash
-   bun dev
-   # or
    npm run dev
+   # or
+   bun dev
    ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -52,10 +62,29 @@ A powerful and intuitive web application designed to help musicians, producers, 
 ## ⚙️ Configuration
 
 1. Click the **Settings** icon (⚙️) in the top-right corner.
-2. Select your preferred **Provider** (OpenRouter or Groq).
+2. Select your preferred **Provider** from the universal list.
 3. Enter your **API Key**.
-4. Choose a **Model** from the list or add a custom one.
-5. (Optional) Toggle between Light and Dark mode.
+4. The system will automatically fetch and list the models available.
+5. Choose your desired **Model**.
+6. (Optional) Toggle between Light and Dark mode.
+
+---
+
+## 📅 Changelog
+
+### [v1.1.0] - 2026-04-28
+#### Added
+- **Universal Provider Support**: Added support for 10+ new OpenAI-compatible API providers including NVIDIA NIM, DeepSeek, Mistral, Together AI, Perplexity, Cerebras, DeepInfra, SambaNova, and Fireworks.
+- **Dynamic Model Fetching**: The application now automatically fetches the available model list from the selected provider's API `/models` endpoint.
+- **Strict Security Headers**: Implemented comprehensive HTTP security headers in Next.js configuration (CSP, HSTS, Anti-Sniff, X-Frame-Options) to protect against common web vulnerabilities.
+- **Lockfile Fixes**: Added `package-lock.json` validation for proper dependency and supply chain integrity management.
+
+#### Changed
+- Completely refactored the UI settings to dynamically react to API Key insertions and Provider selections.
+- Improved error handling and toast notifications for better UX.
+
+#### Removed
+- Removed the manual "Custom Models" configuration as the app now natively fetches any model exposed by the respective API.
 
 ---
 
