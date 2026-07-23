@@ -1,0 +1,82 @@
+name: Deploy ai-music.viaweb.pro
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ai-music
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (standalone)
+        run: npm run build
+        env:
+          NODE_ENV: production
+          # API keys are provided by the user in the browser; no server secrets required.
+
+      - name: Pack standalone release
+        run: |
+          set -euo pipefail
+          # Next standalone output
+          test -d .next/standalone
+          mkdir -p release
+          # Copy standalone server
+          cp -a .next/standalone/. release/
+          # Static assets required next to standalone
+          mkdir -p release/.next
+          cp -a .next/static release/.next/static
+          if [ -d public ]; then
+            cp -a public release/public
+          fi
+          # Ensure server.js exists
+          test -f release/server.js
+          tar -C release -czf ai-music-release.tgz .
+          ls -lh ai-music-release.tgz
+
+      - name: Upload release to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "ai-music-release.tgz"
+          target: "/tmp"
+          overwrite: true
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            STAGING=/tmp/ai-music-staging-$$
+            rm -rf "$STAGING"
+            mkdir -p "$STAGING"
+            tar -xzf /tmp/ai-music-release.tgz -C "$STAGING"
+            /opt/ai-music/deploy.sh "$STAGING"
+            rm -rf "$STAGING" /tmp/ai-music-release.tgz
+            # smoke test public
+            sleep 2
+            code=$(curl -sk -o /dev/null -w "%{http_code}" -A "Mozilla/5.0" https://ai-music.viaweb.pro/ || true)
+            echo "public_http=$code"
+            test "$code" = "200" -o "$code" = "307" -o "$code" = "308" -o "$code" = "301" -o "$code" = "302"
