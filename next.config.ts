@@ -33,9 +33,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  cacheControl: 5,
   reactStrictMode: false,
-  experimental: { staleTimes: { dynamic: 0, static: 5 } },
   allowedDevOrigins: [
     "preview-chat-fcea2fd9-50eb-4aa6-b20c-c2273219d19b.space.z.ai",
   ],
