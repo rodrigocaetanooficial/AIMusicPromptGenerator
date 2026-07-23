@@ -1,4 +1,6 @@
-# AI Music Prompt Generator 🎵
+# AI Music Prompt Generator
+
+**Live demo:** [https://ai-music.viaweb.pro](https://ai-music.viaweb.pro)
 
 A powerful, intuitive, and highly customizable web application designed to help musicians, producers, and AI enthusiasts create detailed, production-ready prompts for AI music generators like **Suno**, **Udio**, and others.
 
@@ -98,7 +100,16 @@ A powerful, intuitive, and highly customizable web application designed to help 
 
 ---
 
-## 📄 License
+
+---
+
+## Production
+
+- **Demo:** https://ai-music.viaweb.pro
+- **Deploy:** push to `main` triggers GitHub Actions (Next.js standalone) to OVH VPS (PM2 + nginx).
+- Workflow: `.github/workflows/deploy.yml`.
+
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
