@@ -217,7 +217,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -234,7 +234,7 @@ export default function Home() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Settings — v2 (search)</DialogTitle>
+                <DialogTitle>Settings</DialogTitle>
                 <DialogDescription>
                   Configure your AI provider and preferences
                 </DialogDescription>
