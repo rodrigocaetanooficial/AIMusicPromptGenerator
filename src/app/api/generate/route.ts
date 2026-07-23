@@ -134,9 +134,9 @@ async function generateWithOpenAICompatible(
     "Authorization": `Bearer ${apiKey}`,
   };
 
-  if (provider === "openrouter") {
-    headers["HTTP-Referer"] = "https://music-prompt-generator.local";
-    headers["X-Title"] = "Music Prompt Generator";
+  if (provider === "openrouter" || provider === "opencode" || provider === "opencode-go") {
+    headers["HTTP-Referer"] = "https://ai-music.viaweb.pro";
+    headers["X-Title"] = "AI Music Prompt Generator";
   }
 
   const response = await fetch(`${baseUrl}/chat/completions`, {

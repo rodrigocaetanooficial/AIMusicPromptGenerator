@@ -10,16 +10,31 @@ A powerful, intuitive, and highly customizable web application designed to help 
 
 - **Detailed Prompt Generation**: Automatically generates rich prompts covering rhythm, style, and technical details.
 - **Universal Provider Support**: Natively supports multiple industry-leading AI API providers:
-  - OpenAI
-  - NVIDIA NIM
-  - DeepSeek
-  - Mistral
-  - Together AI
-  - Groq
   - OpenRouter
+  - OpenCode Zen / OpenCode Go
+  - Groq
+  - OpenAI
+  - Google AI (Gemini)
+  - DeepSeek
+  - NVIDIA NIM
+  - xAI (Grok)
   - Perplexity
+  - Together AI
   - Fireworks AI
-  - And more!
+  - Mistral
+  - Cerebras
+  - DeepInfra
+  - SambaNova
+  - SiliconFlow
+  - Moonshot (Kimi)
+  - Alibaba DashScope (Qwen)
+  - GitHub Models
+  - Hugging Face
+  - Novita AI
+  - Hyperbolic
+  - Nebius
+  - Custom / Local (Ollama)
+  - And any other OpenAI-compatible endpoint
 - **Auto-Fetch Models**: Simply select a provider and enter your API Key to instantly fetch and list all available models dynamically.
 - **Precise Controls**: Adjust the number of prompts and creativity (temperature) for each generation.
 - **No Placeholders**: Prompts are structured with specific musical terminology (BPM, instruments, production techniques).
@@ -73,6 +88,17 @@ A powerful, intuitive, and highly customizable web application designed to help 
 ---
 
 ## 📅 Changelog
+
+### [v1.2.0] - 2026-07-23
+#### Added
+- **More providers**: OpenCode Zen, OpenCode Go, Google Gemini (OpenAI-compatible), SiliconFlow, Moonshot (Kimi), Alibaba DashScope (Qwen), GitHub Models, Hugging Face, Novita, Hyperbolic, Nebius, and Custom/Local (Ollama).
+- **Live demo**: https://ai-music.viaweb.pro
+- **Auto-deploy**: GitHub Actions deploys `main` to OVH VPS.
+
+#### Changed
+- Provider list expanded and sorted for broader OpenAI-compatible coverage.
+- OpenRouter/OpenCode request headers now use the production demo URL.
+
 
 ### [v1.1.0] - 2026-04-28
 #### Added
