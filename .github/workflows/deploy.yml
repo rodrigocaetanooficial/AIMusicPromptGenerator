@@ -27,7 +27,9 @@ jobs:
         run: npm ci
 
       - name: Build (standalone)
-        run: npm run build
+        run: |
+          rm -rf .next
+          npm run build
         env:
           NODE_ENV: production
           # API keys are provided by the user in the browser; no server secrets required.
