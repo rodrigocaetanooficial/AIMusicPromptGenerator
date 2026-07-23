@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "next-themes";
-import { Settings, Copy, Check, Sparkles, Loader2, Music, Moon, Sun, RefreshCw } from "lucide-react";
+import { Settings, Copy, Check, Sparkles, Loader2, Music, Moon, Sun, RefreshCw, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -16,12 +16,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -51,6 +57,10 @@ export default function Home() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [providerOpen, setProviderOpen] = useState(false);
+  const [providerQuery, setProviderQuery] = useState("");
+  const [modelOpen, setModelOpen] = useState(false);
+  const [modelQuery, setModelQuery] = useState("");
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [fetchedModels, setFetchedModels] = useState<Model[]>([]);
 
@@ -247,21 +257,75 @@ export default function Home() {
 
                 <Separator />
 
-                {/* Provider Selection */}
+                {/* Provider Selection (searchable) */}
                 <div className="space-y-2">
                   <Label>Provider</Label>
-                  <Select value={provider} onValueChange={setProvider}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select provider" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-72 overflow-y-auto">
-                      {providers.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover
+                    open={providerOpen}
+                    onOpenChange={(open) => {
+                      setProviderOpen(open);
+                      if (!open) setProviderQuery("");
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={providerOpen}
+                        className="w-full justify-between font-normal"
+                      >
+                        <span className="truncate">
+                          {selectedProvider?.name || "Select provider"}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[var(--radix-popover-trigger-width)] p-0"
+                      align="start"
+                    >
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search providers..."
+                          value={providerQuery}
+                          onValueChange={setProviderQuery}
+                        />
+                        <CommandList className="max-h-72">
+                          <CommandEmpty>No provider found.</CommandEmpty>
+                          <CommandGroup>
+                            {providers
+                              .filter((p) => {
+                                const q = providerQuery.trim().toLowerCase();
+                                if (!q) return true;
+                                return (
+                                  p.name.toLowerCase().includes(q) ||
+                                  p.id.toLowerCase().includes(q)
+                                );
+                              })
+                              .map((p) => (
+                                <CommandItem
+                                  key={p.id}
+                                  value={p.id}
+                                  onSelect={() => {
+                                    setProvider(p.id);
+                                    setProviderOpen(false);
+                                    setProviderQuery("");
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      provider === p.id ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  {p.name}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {/* API Key */}
@@ -298,21 +362,89 @@ export default function Home() {
                   </Button>
                 )}
 
-                {/* Model Selection */}
+                {/* Model Selection (searchable) */}
                 <div className="space-y-2">
                   <Label>Model</Label>
-                  <Select value={model} onValueChange={setModel} disabled={displayModels.length === 0}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={displayModels.length === 0 ? "Enter API key to load models" : "Select model"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {displayModels.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover
+                    open={modelOpen}
+                    onOpenChange={(open) => {
+                      if (displayModels.length === 0) return;
+                      setModelOpen(open);
+                      if (!open) setModelQuery("");
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={modelOpen}
+                        disabled={displayModels.length === 0}
+                        className="w-full justify-between font-normal"
+                      >
+                        <span className="truncate">
+                          {displayModels.length === 0
+                            ? "Enter API key to load models"
+                            : displayModels.find((m) => m.id === model)?.name ||
+                              model ||
+                              "Select model"}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[var(--radix-popover-trigger-width)] p-0"
+                      align="start"
+                    >
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search models..."
+                          value={modelQuery}
+                          onValueChange={setModelQuery}
+                        />
+                        <CommandList className="max-h-72">
+                          <CommandEmpty>No model found.</CommandEmpty>
+                          <CommandGroup>
+                            {displayModels
+                              .filter((m) => {
+                                const q = modelQuery.trim().toLowerCase();
+                                if (!q) return true;
+                                return (
+                                  m.name.toLowerCase().includes(q) ||
+                                  m.id.toLowerCase().includes(q) ||
+                                  (m.description || "").toLowerCase().includes(q)
+                                );
+                              })
+                              .map((m) => (
+                                <CommandItem
+                                  key={m.id}
+                                  value={m.id}
+                                  onSelect={() => {
+                                    setModel(m.id);
+                                    setModelOpen(false);
+                                    setModelQuery("");
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      model === m.id ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  <div className="flex min-w-0 flex-col">
+                                    <span className="truncate">{m.name}</span>
+                                    {m.id !== m.name && (
+                                      <span className="truncate text-xs text-muted-foreground">
+                                        {m.id}
+                                      </span>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
               </div>
