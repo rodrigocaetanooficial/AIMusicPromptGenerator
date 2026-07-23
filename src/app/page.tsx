@@ -254,7 +254,7 @@ export default function Home() {
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select provider" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-72 overflow-y-auto">
                       {providers.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
                           {p.name}

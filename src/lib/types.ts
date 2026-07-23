@@ -209,6 +209,14 @@ export const providers: Provider[] = [
     supportsModelListing: true,
   },
   {
+    id: "zai",
+    name: "Z.AI (GLM)",
+    baseUrl: "https://api.z.ai/api/paas/v4",
+    requiresApiKey: true,
+    models: [],
+    supportsModelListing: true,
+  },
+  {
     id: "custom",
     name: "Custom / Local (Ollama)",
     baseUrl: "http://127.0.0.1:11434/v1",

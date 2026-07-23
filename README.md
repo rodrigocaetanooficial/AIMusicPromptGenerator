@@ -33,8 +33,9 @@ A powerful, intuitive, and highly customizable web application designed to help 
   - Novita AI
   - Hyperbolic
   - Nebius
+  - Z.AI (GLM)
   - Custom / Local (Ollama)
-  - And any other OpenAI-compatible endpoint
+
 - **Auto-Fetch Models**: Simply select a provider and enter your API Key to instantly fetch and list all available models dynamically.
 - **Precise Controls**: Adjust the number of prompts and creativity (temperature) for each generation.
 - **No Placeholders**: Prompts are structured with specific musical terminology (BPM, instruments, production techniques).
@@ -88,6 +89,13 @@ A powerful, intuitive, and highly customizable web application designed to help 
 ---
 
 ## 📅 Changelog
+
+### [v1.2.1] - 2026-07-23
+#### Added
+- **Z.AI (GLM)** provider (`https://api.z.ai/api/paas/v4`).
+#### Fixed
+- Provider dropdown now scrolls (`max-h-72`) so all providers are visible.
+
 
 ### [v1.2.0] - 2026-07-23
 #### Added
