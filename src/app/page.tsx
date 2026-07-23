@@ -232,7 +232,7 @@ export default function Home() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Settings</DialogTitle>
+                <DialogTitle>Settings — v2 (search)</DialogTitle>
                 <DialogDescription>
                   Configure your AI provider and preferences
                 </DialogDescription>
