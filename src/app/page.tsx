@@ -468,74 +468,135 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Input Section */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Describe your music
-          </label>
-          <Textarea
-            placeholder="soft rock, jangly guitars"
-            className="min-h-[100px] text-base resize-none"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <p className="text-xs text-muted-foreground">
-            Minimum 3 characters • Press Ctrl/Cmd + Enter to generate
-          </p>
+        {/* Active Provider / Model Info Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-sky-500/20 bg-sky-950/20 dark:bg-sky-950/30 text-xs">
+          <div className="flex items-center gap-2 text-foreground/90">
+            <span className="font-semibold text-sky-400 flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-sky-400" />
+              Active Provider:
+            </span>
+            <span className="px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 font-medium">
+              {selectedProvider?.name || provider}
+            </span>
+            <span className="text-muted-foreground">•</span>
+            <span className="font-semibold text-sky-400">Model:</span>
+            <span className="px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 font-medium truncate max-w-[200px]">
+              {model || "Not selected"}
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSettingsOpen(true)}
+            className="h-7 text-xs gap-1 border-sky-500/30 hover:border-sky-400 hover:bg-sky-500/20 text-sky-300"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            Change Provider / Key
+          </Button>
         </div>
 
-        {/* Controls */}
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-3">
+        {/* Input Section Container */}
+        <Card className="border border-border/80 bg-card/90 shadow-xl rounded-2xl p-6 space-y-5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Number of Prompts</label>
-              <span className="text-sm font-bold text-primary">{promptCount}</span>
+              <label className="text-base font-bold text-foreground flex items-center gap-2">
+                <Music className="w-5 h-5 text-primary" />
+                Describe your music
+              </label>
+              <span className="text-xs text-muted-foreground font-mono">
+                Press Ctrl + Enter to generate
+              </span>
             </div>
-            <Slider
-              value={[promptCount]}
-              onValueChange={([value]) => setPromptCount(value)}
-              min={1}
-              max={10}
-              step={1}
-              className="py-2"
+            <Textarea
+              placeholder="e.g. 80s synthwave with analog warm synths, driving drum machine, nocturnal synth-pop mood"
+              className="min-h-[110px] text-base resize-none bg-background dark:bg-slate-950/80 border-border focus:border-primary focus:ring-primary/30"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Creativity (Temperature)</label>
-              <span className="text-sm font-bold text-primary">{temperature.toFixed(1)}</span>
+          {/* Quick Presets */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Quick Suggestions:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "🎹 80s Synthwave", prompt: "80s synthwave with pulsing analog bass, retro drum machine, and nostalgic synth leads" },
+                { label: "🎧 Lo-Fi Chill", prompt: "chill lo-fi hip hop with vinyl crackle, mellow electric piano, and dusty boom-bap drums" },
+                { label: "🎻 Epic Orchestral", prompt: "epic cinematic orchestral trailer music with booming brass, soaring violins, and massive percussion" },
+                { label: "🎸 Heavy Metal", prompt: "aggressive heavy metal with fast double-bass drums, distorted rhythm guitar riffs, and screaming solos" },
+                { label: "🎷 Smooth Jazz", prompt: "smooth jazz quartet with soulful saxophone solo, walking acoustic bass, and brushed drums" }
+              ].map((preset, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setInput(preset.prompt)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border/70 bg-secondary/40 hover:bg-primary/20 hover:border-primary/50 text-foreground transition-all duration-150"
+                >
+                  {preset.label}
+                </button>
+              ))}
             </div>
-            <Slider
-              value={[temperature]}
-              onValueChange={([value]) => setTemperature(value)}
-              min={0.1}
-              max={1.5}
-              step={0.1}
-              className="py-2"
-            />
           </div>
-        </div>
 
-        {/* Generate Button */}
-        <Button
-          className="w-full h-12 text-base font-semibold"
-          onClick={handleGenerate}
-          disabled={isGenerating || input.trim().length < 3 || !model}
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-5 h-5" />
-              Generate Prompts
-            </>
-          )}
-        </Button>
+          {/* Controls Grid */}
+          <div className="grid gap-6 sm:grid-cols-2 pt-2 border-t border-border/60">
+            <div className="space-y-3 p-3.5 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-foreground">Number of Prompts</label>
+                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-primary/20 text-primary border border-primary/30">
+                  {promptCount}
+                </span>
+              </div>
+              <Slider
+                value={[promptCount]}
+                onValueChange={([value]) => setPromptCount(value)}
+                min={1}
+                max={10}
+                step={1}
+                className="py-2"
+              />
+            </div>
+
+            <div className="space-y-3 p-3.5 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-foreground">Creativity (Temperature)</label>
+                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-primary/20 text-primary border border-primary/30">
+                  {temperature.toFixed(1)}
+                </span>
+              </div>
+              <Slider
+                value={[temperature]}
+                onValueChange={([value]) => setTemperature(value)}
+                min={0.1}
+                max={1.5}
+                step={0.1}
+                className="py-2"
+              />
+            </div>
+          </div>
+
+          {/* Generate Button */}
+          <Button
+            className="w-full h-13 text-base font-bold bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-lg shadow-sky-500/20 active:scale-[0.99] transition-all rounded-xl cursor-pointer"
+            onClick={handleGenerate}
+            disabled={isGenerating || input.trim().length < 3 || !model}
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Generating Prompts...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                Generate {promptCount} {promptCount > 1 ? "Prompts" : "Prompt"}
+              </>
+            )}
+          </Button>
+        </Card>
 
         {/* Generated Prompts */}
         {prompts.length > 0 && (
