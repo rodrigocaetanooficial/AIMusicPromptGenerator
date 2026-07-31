@@ -187,22 +187,27 @@ async function generateWithOpenAICompatible(
 
   if (!response.ok) {
     const errorText = await response.text();
-    let errorMessage = `API error: ${response.status}`;
+    console.error(`Provider API error (${provider} - ${model} - ${response.status}):`, errorText);
+    let errorMessage = `${providerConfig.name} API error (${response.status})`;
     
     try {
       const errorJson = JSON.parse(errorText);
       if (errorJson.error?.message) {
         errorMessage = errorJson.error.message;
+      } else if (errorJson.error) {
+        errorMessage = typeof errorJson.error === 'string' ? errorJson.error : JSON.stringify(errorJson.error);
       } else if (errorJson.message) {
         errorMessage = errorJson.message;
       }
     } catch {
       if (errorText.includes('Forbidden') || response.status === 403) {
-        errorMessage = 'Access forbidden. Your API key may be invalid, expired, or restricted. Please check your dashboard.';
+        errorMessage = 'Access forbidden. Your API key may be invalid or restricted.';
       } else if (response.status === 401) {
-        errorMessage = 'Invalid API key. Please verify your credentials.';
+        errorMessage = 'Invalid API key. Please check your key in Settings.';
       } else if (response.status === 429) {
-        errorMessage = 'Rate limit exceeded. Please wait and try again.';
+        errorMessage = 'Rate limit exceeded for this model. Please try another model or wait a moment.';
+      } else if (response.status === 404) {
+        errorMessage = `Model '${model}' not found for ${providerConfig.name}. Please select a supported model.`;
       }
     }
     

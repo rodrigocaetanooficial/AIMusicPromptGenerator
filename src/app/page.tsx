@@ -111,6 +111,9 @@ export default function Home() {
     setMounted(true);
   }, []);
 
+  const isHydratedRef = useState({ current: false })[0];
+  const lastSyncedRef = useState({ current: "" })[0];
+
   // Sync user settings from database on login
   useEffect(() => {
     if (sessionStatus === "authenticated") {
@@ -128,26 +131,37 @@ export default function Home() {
               if (Array.isArray(cfg.fetchedModels)) setFetchedModels(pId, cfg.fetchedModels);
             }
           }
+          isHydratedRef.current = true;
+          lastSyncedRef.current = JSON.stringify({
+            provider: data.settings?.provider || provider,
+            model: data.settings?.model || model,
+            theme,
+            providerConfigs: data.providerConfigs || providerConfigs,
+          });
         })
-        .catch((err) => console.error("Failed to load user settings:", err));
+        .catch((err) => {
+          console.error("Failed to load user settings:", err);
+          isHydratedRef.current = true;
+        });
+    } else {
+      isHydratedRef.current = true;
     }
-  }, [sessionStatus, setProvider, setModel, setProviderApiKey, setProviderEnabled, setFetchedModels]);
+  }, [sessionStatus]);
 
-  // Auto-save user settings to database when authenticated
+  // Auto-save user settings to database when authenticated, only if changed
   useEffect(() => {
-    if (sessionStatus === "authenticated") {
+    if (sessionStatus === "authenticated" && isHydratedRef.current) {
+      const payloadStr = JSON.stringify({ provider, model, theme, providerConfigs });
+      if (payloadStr === lastSyncedRef.current) return;
+
       const timer = setTimeout(() => {
+        lastSyncedRef.current = payloadStr;
         fetch("/api/user/settings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            provider,
-            model,
-            theme,
-            providerConfigs,
-          }),
+          body: payloadStr,
         }).catch((err) => console.error("Failed to sync settings:", err));
-      }, 1000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [sessionStatus, provider, model, theme, providerConfigs]);
