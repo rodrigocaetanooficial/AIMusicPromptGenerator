@@ -1,152 +1,144 @@
-# AI Music Prompt Generator
+<div align="center">
 
-**Live demo:** [https://ai-music.viaweb.pro](https://ai-music.viaweb.pro)
+  <img src="public/favicon.svg" alt="AI Music Prompt Generator Logo" width="100" height="100" />
 
-A powerful, intuitive, and highly customizable web application designed to help musicians, producers, and AI enthusiasts create detailed, production-ready prompts for AI music generators like **Suno**, **Udio**, and others.
+  # 🎵 AI Music Prompt Generator
 
----
+  **Empower your musical creativity with production-ready prompts for Suno, Udio, and AI Music Generators.**
 
-## ✨ Features
+  [![Live Demo](https://img.shields.io/badge/Live%20Demo-ai--music.viaweb.pro-0284c7?style=for-the-badge&logo=googlechrome&logoColor=white)](https://ai-music.viaweb.pro)
+  [![Build Status](https://img.shields.io/github/actions/workflow/status/rodrigocaetanooficial/AIMusicPromptGenerator/deploy.yml?branch=main&style=for-the-badge&label=Deploy&logo=github)](https://github.com/rodrigocaetanooficial/AIMusicPromptGenerator/actions)
+  [![Next.js](https://img.shields.io/badge/Next.js%2016-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20v4-38bdf8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Prisma](https://img.shields.io/badge/Prisma%20SQLite-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+  [![License](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)](LICENSE)
 
-- **Detailed Prompt Generation**: Automatically generates rich prompts covering rhythm, style, and technical details.
-- **Universal Provider Support**: Natively supports multiple industry-leading AI API providers:
-  - OpenRouter
-  - OpenCode Zen / OpenCode Go
-  - Groq
-  - OpenAI
-  - Google AI (Gemini)
-  - DeepSeek
-  - NVIDIA NIM
-  - xAI (Grok)
-  - Perplexity
-  - Together AI
-  - Fireworks AI
-  - Mistral
-  - Cerebras
-  - DeepInfra
-  - SambaNova
-  - SiliconFlow
-  - Moonshot (Kimi)
-  - Alibaba DashScope (Qwen)
-  - GitHub Models
-  - Hugging Face
-  - Novita AI
-  - Hyperbolic
-  - Nebius
-  - Z.AI (GLM)
-  - Custom / Local (Ollama)
-
-- **Auto-Fetch Models**: Simply select a provider and enter your API Key to instantly fetch and list all available models dynamically.
-- **Precise Controls**: Adjust the number of prompts and creativity (temperature) for each generation.
-- **No Placeholders**: Prompts are structured with specific musical terminology (BPM, instruments, production techniques).
-- **Dark Mode Support**: Sleek, modern interface that's easy on the eyes.
-- **Privacy Focused**: Your API keys are stored securely in your browser's local storage and are never sent to any external server other than the provider's API.
+</div>
 
 ---
 
-## 🛠️ Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) or [Node.js](https://nodejs.org/)
-- An API Key from your preferred provider (e.g., OpenAI, Groq, OpenRouter, etc.)
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/rodrigocaetanooficial/AIMusicPromptGenerator.git
-   cd AIMusicPromptGenerator
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   bun install
-   ```
-
-3. Run the development server:
-   ```bash
-   npm run dev
-   # or
-   bun dev
-   ```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+> [!NOTE]
+> **Live Web Application:** Access the deployed instance directly at [**https://ai-music.viaweb.pro**](https://ai-music.viaweb.pro)
 
 ---
 
-## ⚙️ Configuration
+## 🌟 Overview
 
-1. Click the **Settings** icon (⚙️) in the top-right corner.
-2. Select your preferred **Provider** from the universal list.
-3. Enter your **API Key**.
-4. The system will automatically fetch and list the models available.
-5. Choose your desired **Model**.
-6. (Optional) Toggle between Light and Dark mode.
+**AI Music Prompt Generator** is a full-stack, state-of-the-art web application crafted to transform simple music ideas into rich, production-grade prompts for **Suno**, **Udio**, and leading AI music composition platforms.
+
+Featuring a multi-provider AI engine, automatic model listing, SQLite persistence with NextAuth, per-model toggle switches, and a high-contrast Light/Dark design system, it delivers instant, structured prompts categorized into **Rhythm**, **Style**, and **Technical Details**.
 
 ---
 
-## 📅 Changelog
+## ✨ Key Features
 
-### [v1.2.1] - 2026-07-23
-#### Added
-- **Z.AI (GLM)** provider (`https://api.z.ai/api/paas/v4`).
-#### Fixed
-- Provider dropdown now scrolls (`max-h-72`) so all providers are visible.
+- 🎹 **Structured 3-Field Output**:
+  - **🥁 Rhythm**: Precise BPM, time signatures, drum patterns, and groove descriptions.
+  - **🎨 Style**: Genre, subgenre, era, mood, and atmospheric characteristics (strictly no artist/band names).
+  - **🎛️ Technical Details**: Specific instrument tones, arrangement elements, mixing techniques, and vocal dynamics.
 
+- 🤖 **Universal AI Provider Ecosystem (25+ APIs)**:
+  - **Google AI (Gemini)**, **Groq**, **OpenRouter**, **OpenAI**, **DeepSeek**, **NVIDIA NIM**, **xAI (Grok)**, **Perplexity**, **Together AI**, **Fireworks AI**, **Mistral**, **Ollama (Local)**, and more.
 
-### [v1.2.0] - 2026-07-23
-#### Added
-- **More providers**: OpenCode Zen, OpenCode Go, Google Gemini (OpenAI-compatible), SiliconFlow, Moonshot (Kimi), Alibaba DashScope (Qwen), GitHub Models, Hugging Face, Novita, Hyperbolic, Nebius, and Custom/Local (Ollama).
-- **Live demo**: https://ai-music.viaweb.pro
-- **Auto-deploy**: GitHub Actions deploys `main` to OVH VPS.
+- ⚡ **Dynamic Model Discovery**:
+  - Automatically fetches and populates live models directly from provider endpoints (`/models`).
 
-#### Changed
-- Provider list expanded and sorted for broader OpenAI-compatible coverage.
-- OpenRouter/OpenCode request headers now use the production demo URL.
+- 🎚️ **Per-Model Toggle Switches**:
+  - Enable or disable specific models per provider to clean up your workspace dropdown.
 
+- 🔐 **Authentication & Permanent Sync**:
+  - Sign in with **Google OAuth** or **Email Verification**.
+  - Sync provider configurations, API keys, and model preferences permanently to an encrypted SQLite database.
 
-### [v1.1.0] - 2026-04-28
-#### Added
-- **Universal Provider Support**: Added support for 10+ new OpenAI-compatible API providers including NVIDIA NIM, DeepSeek, Mistral, Together AI, Perplexity, Cerebras, DeepInfra, SambaNova, and Fireworks.
-- **Dynamic Model Fetching**: The application now automatically fetches the available model list from the selected provider's API `/models` endpoint.
-- **Strict Security Headers**: Implemented comprehensive HTTP security headers in Next.js configuration (CSP, HSTS, Anti-Sniff, X-Frame-Options) to protect against common web vulnerabilities.
-- **Lockfile Fixes**: Added `package-lock.json` validation for proper dependency and supply chain integrity management.
-
-#### Changed
-- Completely refactored the UI settings to dynamically react to API Key insertions and Provider selections.
-- Improved error handling and toast notifications for better UX.
-
-#### Removed
-- Removed the manual "Custom Models" configuration as the app now natively fetches any model exposed by the respective API.
+- 🌓 **Dynamic Light & Dark Theme System**:
+  - Ultra-clear, high-contrast UI with elevated inputs, responsive container width (`max-w-6xl`), and instant real-time theme toggling.
 
 ---
 
-## 🏗️ Built With
+## 🛠️ Tech Stack & Architecture
 
-- **[Next.js](https://nextjs.org/)** - App Router, Server Actions
-- **[Tailwind CSS](https://tailwindcss.com/)** - Styling
-- **[shadcn/ui](https://ui.shadcn.com/)** - UI Components
-- **[Zustand](https://github.com/pmndrs/zustand)** - State Management (with persistence)
-- **[Lucide React](https://lucide.dev/)** - Iconography
-
----
-
-
----
-
-## Production
-
-- **Demo:** https://ai-music.viaweb.pro
-- **Deploy:** push to `main` triggers GitHub Actions (Next.js standalone) to OVH VPS (PM2 + nginx).
-- Workflow: `.github/workflows/deploy.yml`.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | [Next.js 16 (App Router)](https://nextjs.org/) |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/) |
+| **State Management** | [Zustand](https://github.com/pmndrs/zustand) (with LocalStorage & API sync) |
+| **Database & ORM** | [Prisma](https://www.prisma.io/) with [SQLite](https://www.sqlite.org/) |
+| **Authentication** | [NextAuth.js](https://next-auth.js.org/) (Google OAuth + Credentials Provider) |
+| **Icons & Animation** | [Lucide React](https://lucide.dev/) |
+| **Deployment** | [OVH Cloud VPS](https://www.ovhcloud.com/) + GitHub Actions + PM2 + Nginx |
 
 ---
 
-Created with ❤️ by [Rodrigo Caetano](https://github.com/rodrigocaetanooficial)
+## 🚀 Getting Started
+
+> [!TIP]
+> Make sure you have **Node.js 20+** or **Bun** installed before proceeding.
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/rodrigocaetanooficial/AIMusicPromptGenerator.git
+cd AIMusicPromptGenerator
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Setup Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+DATABASE_URL="file:./prisma/dev.db"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-super-secret-key-here"
+
+# Google OAuth Credentials (Optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
+
+### 4. Initialize Database Schema
+
+```bash
+npx prisma db push
+```
+
+### 5. Run the Local Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser to start generating music prompts!
+
+---
+
+## ☁️ Deployment Pipeline
+
+This repository includes a continuous integration and deployment pipeline configured in `.github/workflows/deploy.yml`:
+
+1. **Trigger**: Pushes to `main` branch.
+2. **Build**: Standalone Next.js bundle created via GitHub Actions runner.
+3. **Deployment**: Automatic SCP release deployment to OVH Cloud VPS running PM2 process manager behind an Nginx reverse proxy.
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+
+---
+
+<div align="center">
+
+  **Developed with ❤️ by [ViaWeb](https://www.viaweb.pro) & [Rodrigo Caetano](https://github.com/rodrigocaetanooficial)**
+
+  [www.viaweb.pro](https://www.viaweb.pro)
+
+</div>
