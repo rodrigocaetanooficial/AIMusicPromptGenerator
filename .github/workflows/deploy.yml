@@ -28,11 +28,12 @@ jobs:
 
       - name: Build (standalone)
         run: |
+          npx prisma generate
           rm -rf .next
           npm run build
         env:
           NODE_ENV: production
-          # API keys are provided by the user in the browser; no server secrets required.
+          DATABASE_URL: "file:./dev.db"
 
       - name: Pack standalone release
         run: |
