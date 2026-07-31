@@ -416,9 +416,9 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
       {/* Header */}
       <header className="border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-sky-500/15 border border-sky-400/30 text-sky-500 shadow-sm">
+            <div className="p-2 rounded-xl bg-sky-500/20 border border-sky-500/40 text-sky-500 shadow-sm">
               <Music className="w-5 h-5" />
             </div>
             <div>
@@ -431,47 +431,59 @@ export default function Home() {
             {/* Quick Theme Switcher Button */}
             {mounted && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                className="h-9 w-9 p-0 rounded-xl hover:bg-accent text-foreground"
+                className="h-9 px-3 border-2 border-border bg-secondary hover:bg-accent text-foreground font-semibold rounded-xl gap-1.5 shadow-sm"
                 title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
               >
-                {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
+                {isDark ? (
+                  <>
+                    <Sun className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs hidden sm:inline">Light</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-4 h-4 text-slate-700" />
+                    <span className="text-xs hidden sm:inline">Dark</span>
+                  </>
+                )}
               </Button>
             )}
 
             {/* Settings Dialog Trigger */}
             <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 border-border bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-sm">
+                <Button variant="outline" size="sm" className="gap-2 border-2 border-border bg-secondary hover:bg-accent text-foreground text-xs font-bold rounded-xl shadow-sm">
                   <Settings className="w-4 h-4 text-sky-500" />
                   <span className="hidden sm:inline">Settings</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border text-card-foreground p-6 shadow-2xl">
+              <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-2 border-border text-card-foreground p-6 shadow-2xl rounded-2xl">
                 <DialogHeader>
                   <DialogTitle className="text-xl font-bold flex items-center gap-2 text-sky-500">
                     <Cpu className="w-5 h-5" />
                     Provider & Model Manager
                   </DialogTitle>
-                  <DialogDescription className="text-muted-foreground">
+                  <DialogDescription className="text-muted-foreground font-medium">
                     Configure API keys for multiple providers, activate providers, and toggle individual models ON/OFF.
                   </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6 pt-2">
                   {/* Theme Switcher in Settings */}
-                  <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-secondary/50 shadow-sm">
+                  <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-secondary/80 shadow-sm">
                     <div className="flex items-center gap-3">
                       {isDark ? (
-                        <Moon className="w-4 h-4 text-sky-400" />
+                        <Moon className="w-5 h-5 text-sky-400" />
                       ) : (
-                        <Sun className="w-4 h-4 text-amber-500" />
+                        <Sun className="w-5 h-5 text-amber-500" />
                       )}
                       <div>
-                        <Label className="font-semibold text-foreground block">Dark Mode</Label>
-                        <span className="text-xs text-muted-foreground">Toggle between Light and Dark themes</span>
+                        <Label className="font-bold text-foreground block text-sm">Theme Mode</Label>
+                        <span className="text-xs text-muted-foreground font-medium">
+                          Current theme: <strong className="text-foreground">{isDark ? "Dark Charcoal" : "Clean Light"}</strong>
+                        </span>
                       </div>
                     </div>
                     <Switch
@@ -492,12 +504,12 @@ export default function Home() {
                     </div>
 
                     <div className="relative">
-                      <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+                      <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-muted-foreground" />
                       <Input
                         placeholder="Search providers (Google, OpenRouter, Groq, OpenAI...)"
                         value={providerSearch}
                         onChange={(e) => setProviderSearch(e.target.value)}
-                        className="pl-9 bg-input border-border text-foreground placeholder:text-muted-foreground font-medium"
+                        className="pl-10 h-11 bg-input border-2 border-border text-foreground placeholder:text-muted-foreground font-medium rounded-xl shadow-sm focus:border-sky-500"
                       />
                     </div>
                   </div>
@@ -521,12 +533,12 @@ export default function Home() {
                         return (
                           <div
                             key={p.id}
-                            className={`rounded-xl border transition-all duration-200 ${
+                            className={`rounded-xl border-2 transition-all duration-200 ${
                               isSelected
-                                ? "border-sky-500 dark:border-sky-400 bg-sky-500/10 shadow-md"
+                                ? "border-sky-500 bg-sky-500/10 shadow-md"
                                 : cfg.enabled
                                 ? "border-border bg-card"
-                                : "border-border/60 bg-muted/40 opacity-80"
+                                : "border-border/50 bg-muted/30 opacity-75"
                             }`}
                           >
                             {/* Card Header */}
@@ -543,26 +555,26 @@ export default function Home() {
                                 </Button>
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-bold text-foreground">{p.name}</span>
+                                    <span className="font-bold text-foreground text-base">{p.name}</span>
                                     {isSelected && (
-                                      <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border-sky-500/40 text-[10px]">
+                                      <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40 text-[10px] font-bold">
                                         Active Default
                                       </Badge>
                                     )}
                                     {cfg.apiKey && (
-                                      <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/40 text-[10px]">
+                                      <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
                                         Key Set
                                       </Badge>
                                     )}
                                   </div>
-                                  <span className="text-xs text-muted-foreground block font-mono">
+                                  <span className="text-xs text-muted-foreground block font-mono font-medium">
                                     {pModels.length} models available
                                   </span>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-3">
-                                <span className="text-xs font-semibold text-muted-foreground hidden sm:inline">
+                                <span className="text-xs font-bold text-muted-foreground hidden sm:inline">
                                   {cfg.enabled ? "Enabled" : "Disabled"}
                                 </span>
                                 <Switch
@@ -577,11 +589,11 @@ export default function Home() {
 
                             {/* Expanded Configuration Section */}
                             {isExpanded && (
-                              <div className="p-4 border-t border-border bg-secondary/40 space-y-4 rounded-b-xl">
+                              <div className="p-4 border-t-2 border-border bg-secondary/50 space-y-4 rounded-b-xl">
                                 {/* API Key Input */}
                                 {p.requiresApiKey && (
                                   <div className="space-y-2">
-                                    <Label className="text-xs font-semibold text-foreground">
+                                    <Label className="text-xs font-bold text-foreground">
                                       {p.name} API Key
                                     </Label>
                                     <div className="flex gap-2">
@@ -590,7 +602,7 @@ export default function Home() {
                                         placeholder={`Enter ${p.name} API Key...`}
                                         value={cfg.apiKey || ""}
                                         onChange={(e) => setProviderApiKey(p.id, e.target.value)}
-                                        className="bg-input border-border text-foreground text-sm font-mono"
+                                        className="bg-input border-2 border-border text-foreground text-sm font-mono rounded-xl h-10"
                                       />
                                       {p.supportsModelListing && (
                                         <Button
@@ -599,7 +611,7 @@ export default function Home() {
                                           size="sm"
                                           disabled={loadingProviderId === p.id || !cfg.apiKey}
                                           onClick={() => fetchModelsForProvider(p.id, false)}
-                                          className="shrink-0 gap-1.5 bg-secondary text-secondary-foreground border border-border"
+                                          className="shrink-0 gap-1.5 bg-secondary text-secondary-foreground border-2 border-border font-bold rounded-xl h-10"
                                         >
                                           {loadingProviderId === p.id ? (
                                             <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
@@ -627,7 +639,7 @@ export default function Home() {
                                     onChange={(e) =>
                                       setModelSearchByProvider({ ...modelSearchByProvider, [p.id]: e.target.value })
                                     }
-                                    className="h-8 bg-input border-border text-xs text-foreground placeholder:text-muted-foreground"
+                                    className="h-9 bg-input border-2 border-border text-xs text-foreground placeholder:text-muted-foreground rounded-lg"
                                   />
 
                                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -647,9 +659,9 @@ export default function Home() {
                                         return (
                                           <div
                                             key={m.id}
-                                            className={`flex items-center justify-between p-2.5 rounded-lg border text-xs transition-colors ${
+                                            className={`flex items-center justify-between p-2.5 rounded-lg border-2 text-xs transition-colors ${
                                               isCurrentModel
-                                                ? "border-sky-500 bg-sky-500/15 text-foreground"
+                                                ? "border-sky-500 bg-sky-500/20 text-foreground"
                                                 : isModelDisabled
                                                 ? "border-border bg-muted/40 text-muted-foreground opacity-60"
                                                 : "border-border bg-card text-foreground hover:bg-accent"
@@ -657,15 +669,15 @@ export default function Home() {
                                           >
                                             <div className="flex flex-col min-w-0 pr-2">
                                               <div className="flex items-center gap-1.5">
-                                                <span className="font-semibold truncate text-foreground">{m.name}</span>
+                                                <span className="font-bold truncate text-foreground">{m.name}</span>
                                                 {isCurrentModel && (
-                                                  <Badge className="bg-sky-500/30 text-sky-600 dark:text-sky-300 text-[9px] px-1.5">
+                                                  <Badge className="bg-sky-500/30 text-sky-600 dark:text-sky-300 text-[9px] px-1.5 font-bold">
                                                     Selected
                                                   </Badge>
                                                 )}
                                               </div>
                                               {m.id !== m.name && (
-                                                <span className="font-mono text-[10px] text-muted-foreground truncate">
+                                                <span className="font-mono text-[10px] text-muted-foreground font-medium truncate">
                                                   {m.id}
                                                 </span>
                                               )}
@@ -685,7 +697,7 @@ export default function Home() {
                                                     description: `${p.name} - ${m.name}`,
                                                   });
                                                 }}
-                                                className="h-6 px-2 text-[10px] bg-secondary hover:bg-sky-600 hover:text-white border border-border"
+                                                className="h-6 px-2 text-[10px] bg-secondary hover:bg-sky-600 hover:text-white border border-border font-bold"
                                               >
                                                 Use
                                               </Button>
@@ -714,7 +726,7 @@ export default function Home() {
 
             {/* User Profile / Login Button */}
             {sessionStatus === "authenticated" && session.user ? (
-              <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl p-1 pr-3 shadow-sm">
+              <div className="flex items-center gap-2 bg-secondary border-2 border-border rounded-xl p-1 pr-3 shadow-sm">
                 {session.user.image ? (
                   <img src={session.user.image} alt="User" className="w-7 h-7 rounded-lg" />
                 ) : (
@@ -722,7 +734,7 @@ export default function Home() {
                     {session.user.name?.[0]?.toUpperCase() || "U"}
                   </div>
                 )}
-                <span className="text-xs font-semibold text-foreground hidden sm:inline max-w-[120px] truncate">
+                <span className="text-xs font-bold text-foreground hidden sm:inline max-w-[120px] truncate">
                   {session.user.name || session.user.email}
                 </span>
                 <Button
@@ -743,7 +755,7 @@ export default function Home() {
                   setAuthMessage(null);
                   setAuthOpen(true);
                 }}
-                className="gap-1.5 border-sky-500/40 bg-sky-500/10 text-sky-600 dark:text-sky-300 hover:bg-sky-500 hover:text-white text-xs font-semibold shadow-sm"
+                className="gap-1.5 border-2 border-sky-500/50 bg-sky-500/10 text-sky-600 dark:text-sky-300 hover:bg-sky-500 hover:text-white text-xs font-bold rounded-xl shadow-sm"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Sign In / Register</span>
@@ -755,13 +767,13 @@ export default function Home() {
 
       {/* User Auth Modal (Sign In / Register / Google OAuth) */}
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border text-card-foreground p-6 shadow-2xl">
+        <DialogContent className="sm:max-w-md bg-card border-2 border-border text-card-foreground p-6 shadow-2xl rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2 text-sky-500">
               {authMode === "login" ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
               {authMode === "login" ? "Sign In to Your Account" : "Create Your Account"}
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription className="text-muted-foreground font-medium">
               {authMode === "login"
                 ? "Sign in to permanently save your API keys and active models."
                 : "Create an account to keep your settings synced permanently across all devices."}
@@ -774,7 +786,7 @@ export default function Home() {
               type="button"
               variant="outline"
               onClick={() => signIn("google")}
-              className="w-full h-11 bg-secondary hover:bg-accent border-border text-foreground gap-2 font-semibold shadow-sm"
+              className="w-full h-11 bg-secondary hover:bg-accent border-2 border-border text-foreground gap-2 font-bold shadow-sm rounded-xl"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -799,16 +811,16 @@ export default function Home() {
 
             <div className="relative flex items-center justify-center my-2">
               <Separator className="bg-border" />
-              <span className="absolute bg-card px-3 text-xs text-muted-foreground font-semibold uppercase">Or</span>
+              <span className="absolute bg-card px-3 text-xs text-muted-foreground font-bold uppercase">Or</span>
             </div>
 
             {/* Auth Message Banner */}
             {authMessage && (
               <div
-                className={`p-3 rounded-lg border text-xs flex items-start gap-2 ${
+                className={`p-3 rounded-xl border-2 text-xs flex items-start gap-2 ${
                   authMessage.type === "success"
-                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-300"
-                    : "bg-red-500/10 border-red-500/40 text-red-600 dark:text-red-300"
+                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-300 font-semibold"
+                    : "bg-red-500/10 border-red-500/40 text-red-600 dark:text-red-300 font-semibold"
                 }`}
               >
                 {authMessage.type === "success" ? (
@@ -824,37 +836,37 @@ export default function Home() {
             <form onSubmit={handleAuthSubmit} className="space-y-3">
               {authMode === "register" && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-foreground">Name</Label>
+                  <Label className="text-xs font-bold text-foreground">Name</Label>
                   <Input
                     placeholder="Your Name"
                     value={authName}
                     onChange={(e) => setAuthName(e.target.value)}
-                    className="bg-input border-border text-foreground text-sm"
+                    className="bg-input border-2 border-border text-foreground text-sm h-10 rounded-xl"
                   />
                 </div>
               )}
 
               <div className="space-y-1">
-                <Label className="text-xs text-foreground">Email Address</Label>
+                <Label className="text-xs font-bold text-foreground">Email Address</Label>
                 <Input
                   type="email"
                   required
                   placeholder="name@example.com"
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
-                  className="bg-input border-border text-foreground text-sm"
+                  className="bg-input border-2 border-border text-foreground text-sm h-10 rounded-xl"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs text-foreground">Password</Label>
+                <Label className="text-xs font-bold text-foreground">Password</Label>
                 <Input
                   type="password"
                   required
                   placeholder="••••••••"
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
-                  className="bg-input border-border text-foreground text-sm"
+                  className="bg-input border-2 border-border text-foreground text-sm h-10 rounded-xl"
                 />
               </div>
 
@@ -881,7 +893,7 @@ export default function Home() {
                   setAuthMessage(null);
                   setAuthMode(authMode === "login" ? "register" : "login");
                 }}
-                className="text-xs text-sky-500 hover:underline font-semibold"
+                className="text-xs text-sky-500 hover:underline font-bold"
               >
                 {authMode === "login"
                   ? "Don't have an account? Register here"
@@ -893,22 +905,22 @@ export default function Home() {
       </Dialog>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Main Prompter Card */}
-        <Card className="border border-border bg-card shadow-2xl rounded-2xl p-6 space-y-6">
+        <Card className="border-2 border-border bg-card shadow-2xl rounded-2xl p-6 space-y-6">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-base font-bold text-foreground flex items-center gap-2">
                 <Music className="w-5 h-5 text-sky-500" />
                 Describe your music
               </label>
-              <span className="text-xs text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground font-mono font-medium">
                 Press Ctrl + Enter to generate
               </span>
             </div>
             <Textarea
               placeholder="e.g. 80s synthwave with analog warm synths, driving drum machine, nocturnal synth-pop mood"
-              className="min-h-[110px] text-base resize-none bg-input border-border text-foreground focus:border-sky-500 focus:ring-sky-500/30 placeholder:text-muted-foreground font-sans shadow-inner"
+              className="min-h-[120px] text-base resize-none bg-input border-2 border-border text-foreground focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 placeholder:text-muted-foreground font-sans shadow-inner rounded-xl"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -916,13 +928,13 @@ export default function Home() {
           </div>
 
           {/* AI Model Dropdown */}
-          <div className="space-y-2 pt-1 border-t border-border">
+          <div className="space-y-2 pt-2 border-t-2 border-border">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                 <Cpu className="w-4 h-4 text-sky-500" />
                 Select AI Model:
               </Label>
-              <span className="text-xs text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground font-bold">
                 {groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0)} models active
               </span>
             </div>
@@ -934,29 +946,29 @@ export default function Home() {
                   variant="outline"
                   role="combobox"
                   aria-expanded={groupedModelOpen}
-                  className="w-full justify-between font-normal bg-input border-border hover:bg-accent text-foreground h-11 shadow-sm"
+                  className="w-full justify-between font-normal bg-input border-2 border-border hover:bg-accent text-foreground h-12 shadow-sm rounded-xl"
                 >
                   <div className="flex items-center gap-2 truncate">
-                    <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border-sky-500/30 text-xs font-bold">
+                    <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40 text-xs font-bold">
                       {selectedProvider?.name || provider}
                     </Badge>
-                    <span className="truncate font-semibold text-foreground">
+                    <span className="truncate font-bold text-foreground text-sm">
                       {model || "Select a model..."}
                     </span>
                   </div>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-70 text-muted-foreground" />
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-80 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-border shadow-2xl" align="start">
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
                 <Command shouldFilter={false} className="bg-card text-card-foreground">
                   <CommandInput
                     placeholder="Search model or provider..."
                     value={groupedModelQuery}
                     onValueChange={setGroupedModelQuery}
-                    className="bg-input text-foreground border-border"
+                    className="bg-input text-foreground border-border h-11 font-medium"
                   />
                   <CommandList className="max-h-80">
-                    <CommandEmpty className="p-4 text-xs text-muted-foreground text-center">
+                    <CommandEmpty className="p-4 text-xs text-muted-foreground text-center font-medium">
                       No matching models found. Enable more providers in Settings!
                     </CommandEmpty>
                     {groupedEnabledModels.map(({ provider: p, models: pModels }) => {
@@ -993,14 +1005,14 @@ export default function Home() {
                                     description: `${p.name} → ${m.name}`,
                                   });
                                 }}
-                                className={`cursor-pointer text-foreground aria-selected:bg-accent flex items-center justify-between p-2.5 rounded-lg border my-1 ${
+                                className={`cursor-pointer text-foreground aria-selected:bg-accent flex items-center justify-between p-2.5 rounded-lg border-2 my-1 ${
                                   isSelected ? "border-sky-500 bg-sky-500/20" : "border-border bg-input hover:bg-accent"
                                 }`}
                               >
                                 <div className="flex items-center gap-2 min-w-0">
                                   <Check className={`h-4 w-4 text-sky-500 shrink-0 ${isSelected ? "opacity-100" : "opacity-0"}`} />
                                   <div className="flex flex-col min-w-0">
-                                    <span className="font-semibold text-sm truncate text-foreground">{m.name}</span>
+                                    <span className="font-bold text-sm truncate text-foreground">{m.name}</span>
                                     <span className="text-[11px] text-muted-foreground font-mono truncate">
                                       {p.name} • {m.id}
                                     </span>
@@ -1050,7 +1062,7 @@ export default function Home() {
                   key={idx}
                   type="button"
                   onClick={() => setInput(item.prompt)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-border bg-secondary hover:bg-sky-500 hover:text-white text-foreground transition-all duration-150 shadow-sm"
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-border bg-secondary hover:bg-sky-500 hover:text-white text-foreground transition-all duration-150 shadow-sm"
                 >
                   {item.label}
                 </button>
@@ -1059,13 +1071,13 @@ export default function Home() {
           </div>
 
           {/* Sliders Grid */}
-          <div className="grid gap-6 sm:grid-cols-2 pt-2 border-t border-border">
-            <div className="space-y-3 p-4 rounded-xl border border-border bg-secondary/50 shadow-sm">
+          <div className="grid gap-6 sm:grid-cols-2 pt-2 border-t-2 border-border">
+            <div className="space-y-3 p-4 rounded-xl border-2 border-border bg-secondary/60 shadow-sm">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-foreground">
                   Number of Prompts
                 </label>
-                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/30">
+                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40">
                   {promptCount}
                 </span>
               </div>
@@ -1079,12 +1091,12 @@ export default function Home() {
               />
             </div>
 
-            <div className="space-y-3 p-4 rounded-xl border border-border bg-secondary/50 shadow-sm">
+            <div className="space-y-3 p-4 rounded-xl border-2 border-border bg-secondary/60 shadow-sm">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-foreground">
                   Creativity (Temperature)
                 </label>
-                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/30">
+                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40">
                   {temperature.toFixed(1)}
                 </span>
               </div>
@@ -1133,12 +1145,12 @@ export default function Home() {
               {prompts.map((promptItem, index) => (
                 <Card
                   key={index}
-                  className="relative overflow-hidden border border-border bg-card shadow-2xl rounded-2xl"
+                  className="relative overflow-hidden border-2 border-border bg-card shadow-2xl rounded-2xl"
                 >
-                  <CardHeader className="pb-3 border-b border-border bg-secondary/40 p-4">
+                  <CardHeader className="pb-3 border-b-2 border-border bg-secondary/50 p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/20 text-xs font-bold text-sky-600 dark:text-sky-300 border border-sky-500/30">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/20 text-xs font-bold text-sky-600 dark:text-sky-300 border border-sky-500/40">
                           {index + 1}
                         </span>
                         <CardTitle className="text-base font-bold text-foreground">
@@ -1150,7 +1162,7 @@ export default function Home() {
                         variant="secondary"
                         size="sm"
                         onClick={() => handleCopy(promptItem, index)}
-                        className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border border-border"
+                        className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border-2 border-border"
                       >
                         {copiedIndex === index ? (
                           <>
@@ -1169,16 +1181,16 @@ export default function Home() {
 
                   <CardContent className="space-y-4 pt-4 p-5">
                     {/* Rhythm Box */}
-                    <div className="p-4 rounded-xl border border-emerald-500/30 dark:border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-950/30 space-y-2 shadow-sm">
+                    <div className="p-4 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-950/40 space-y-2 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border border-emerald-500/30">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border border-emerald-500/40">
                           🥁 Rhythm
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopySection("Rhythm", promptItem.rhythm, `rhythm-${index}`)}
-                          className="h-7 px-2.5 text-xs text-emerald-700 dark:text-emerald-200 hover:bg-emerald-500/20 font-semibold"
+                          className="h-7 px-2.5 text-xs text-emerald-700 dark:text-emerald-200 hover:bg-emerald-500/20 font-bold"
                         >
                           {copiedSection === `rhythm-${index}` ? (
                             <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -1187,22 +1199,22 @@ export default function Home() {
                           )}
                         </Button>
                       </div>
-                      <p className="text-sm text-foreground font-medium leading-relaxed pl-1">
+                      <p className="text-sm text-foreground font-semibold leading-relaxed pl-1">
                         {promptItem.rhythm || "N/A"}
                       </p>
                     </div>
 
                     {/* Style Box */}
-                    <div className="p-4 rounded-xl border border-sky-500/30 dark:border-sky-500/40 bg-sky-500/10 dark:bg-sky-950/30 space-y-2 shadow-sm">
+                    <div className="p-4 rounded-xl border-2 border-sky-500/40 bg-sky-500/10 dark:bg-sky-950/40 space-y-2 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-700 dark:text-sky-200 border border-sky-500/30">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-700 dark:text-sky-200 border border-sky-500/40">
                           🎨 Style
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopySection("Style", promptItem.style, `style-${index}`)}
-                          className="h-7 px-2.5 text-xs text-sky-700 dark:text-sky-200 hover:bg-sky-500/20 font-semibold"
+                          className="h-7 px-2.5 text-xs text-sky-700 dark:text-sky-200 hover:bg-sky-500/20 font-bold"
                         >
                           {copiedSection === `style-${index}` ? (
                             <Check className="w-3.5 h-3.5 text-sky-500" />
@@ -1211,22 +1223,22 @@ export default function Home() {
                           )}
                         </Button>
                       </div>
-                      <p className="text-sm text-foreground font-medium leading-relaxed pl-1">
+                      <p className="text-sm text-foreground font-semibold leading-relaxed pl-1">
                         {promptItem.style || "N/A"}
                       </p>
                     </div>
 
                     {/* Details Box */}
-                    <div className="p-4 rounded-xl border border-indigo-500/30 dark:border-indigo-500/40 bg-indigo-500/10 dark:bg-indigo-950/30 space-y-2 shadow-sm">
+                    <div className="p-4 rounded-xl border-2 border-indigo-500/40 bg-indigo-500/10 dark:bg-indigo-950/40 space-y-2 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 border border-indigo-500/30">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 border border-indigo-500/40">
                           🎛️ Details
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopySection("Details", promptItem.details, `details-${index}`)}
-                          className="h-7 px-2.5 text-xs text-indigo-700 dark:text-indigo-200 hover:bg-indigo-500/20 font-semibold"
+                          className="h-7 px-2.5 text-xs text-indigo-700 dark:text-indigo-200 hover:bg-indigo-500/20 font-bold"
                         >
                           {copiedSection === `details-${index}` ? (
                             <Check className="w-3.5 h-3.5 text-indigo-500" />
@@ -1235,7 +1247,7 @@ export default function Home() {
                           )}
                         </Button>
                       </div>
-                      <p className="text-sm text-foreground font-medium leading-relaxed pl-1">
+                      <p className="text-sm text-foreground font-semibold leading-relaxed pl-1">
                         {promptItem.details || "N/A"}
                       </p>
                     </div>
@@ -1247,8 +1259,8 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="border-t border-border bg-card/90 mt-auto">
-        <div className="max-w-4xl mx-auto px-4 py-4 text-center text-sm text-muted-foreground">
+      <footer className="border-t-2 border-border bg-card/90 mt-auto">
+        <div className="max-w-6xl mx-auto px-4 py-4 text-center text-sm text-muted-foreground font-medium">
           Music Prompt Generator • Create detailed prompts for AI music generators
         </div>
       </footer>
