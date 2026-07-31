@@ -226,12 +226,20 @@ export const providers: Provider[] = [
   },
 ];
 
+export interface ProviderConfig {
+  apiKey: string;
+  enabled: boolean;
+  disabledModels: string[];
+  fetchedModels?: Model[];
+}
+
 // Settings stored in localStorage
 export interface Settings {
   provider: string;
   apiKey: string;
   model: string;
   theme: "light" | "dark" | "system";
+  providerConfigs?: Record<string, ProviderConfig>;
 }
 
 // Generated prompt structure
