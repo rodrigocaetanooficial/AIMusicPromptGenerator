@@ -221,9 +221,7 @@ export default function Home() {
     }
   };
 
-  if (!mounted) {
-    return null;
-  }
+
 
   return (
     <div className="min-h-screen bg-background">
