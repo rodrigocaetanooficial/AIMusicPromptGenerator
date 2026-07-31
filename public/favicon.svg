@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="fav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#fav-grad)" />
+  <!-- Music Note & Equalizer Concept -->
+  <path d="M42 16v20.5a7.5 7.5 0 1 1-6-7.35V23.5L24 26.75v13.75a7.5 7.5 0 1 1-6-7.35V20L42 16z" fill="#ffffff" />
+  <circle cx="20" cy="40" r="3.5" fill="#38bdf8" />
+  <circle cx="38" cy="36" r="3.5" fill="#38bdf8" />
+</svg>

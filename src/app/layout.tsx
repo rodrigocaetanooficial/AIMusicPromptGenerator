@@ -20,7 +20,9 @@ export const metadata: Metadata = {
   keywords: ["Music AI", "Suno", "Prompt Generator", "AI Music", "Music Creation"],
   authors: [{ name: "Music Prompt Generator" }],
   icons: {
-    icon: "/logo.svg",
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 
