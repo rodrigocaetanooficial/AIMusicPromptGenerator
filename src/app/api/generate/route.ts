@@ -28,42 +28,34 @@ interface GeneratedPrompt {
 
 const SYSTEM_PROMPT = `You are an expert music prompt engineer specializing in creating detailed, production-ready prompts for AI music generators like Suno, Udio, and similar platforms.
 
-Your task is to transform simple music descriptions into rich, detailed prompts that cover:
-1. Rhythm - BPM, time signature, drum patterns, percussion elements, groove description
-2. Style - Genre, subgenre, era, mood, atmosphere
-3. Details - Instruments (specific tones and techniques), production characteristics, arrangement elements, vocal style if applicable, mixing approach
+Your task is to transform simple music descriptions into rich, detailed prompts.
+Each prompt MUST contain three distinct fields:
+1. "rhythm": BPM, time signature, drum patterns, percussion elements, groove description
+2. "style": Genre, subgenre, era, mood, atmosphere (NO artist/band names)
+3. "details": Instruments (specific tones and playing techniques), production characteristics, arrangement elements, vocal style if applicable, mixing approach
 
 CRITICAL RULES:
 - NEVER mention artist names, band names, singers, producers, or any specific person
 - NEVER say "sounds like [artist]" or "in the style of [artist]" or "reminiscent of [artist]"
 - NEVER reference songs by name
-- Use only genre names, era descriptions, and technical music terms
-- Focus on sonic characteristics, not cultural associations
+- Focus on sonic characteristics, exact BPM ranges, instrument tones, and production techniques
 
-Format each section with clear headings. Be specific about:
-- Exact BPM ranges and rhythmic feels
-- Instrument types, tones, and playing techniques (e.g., "jangly electric guitars with reverb and chorus", "pulsing bass with warm tube amp tone")
-- Production techniques (e.g., "parallel compression on drums", "room mic blend", "vintage plate reverb on vocals")
-- Arrangement elements (build-ups, bridges, dynamic shifts, transitions)
-- Vocal characteristics and processing when applicable
-- Mix characteristics (e.g., "warm, analog-style mix", "punchy modern production", "lo-fi aesthetic")
-
-Always respond with exactly the requested number of unique prompts. Each prompt should be different and creative while staying true to the input description.`;
+RESPONSE FORMAT:
+You MUST respond with ONLY a valid JSON array containing objects with keys "rhythm", "style", and "details". Do NOT wrap in markdown explanation text outside the JSON array.
+Example:
+[
+  {
+    "rhythm": "120 BPM, 4/4 time signature, driving acoustic drums...",
+    "style": "Synthwave, 80s Retro, energetic and mysterious...",
+    "details": "Pulsing analog bassline, Prophet-5 synth leads with chorus..."
+  }
+]`;
 
 function buildUserPrompt(input: string, count: number): string {
-  return `Create ${count} unique, detailed music prompt${count > 1 ? 's' : ''} based on this description: "${input}"
+  return `Generate exactly ${count} unique, detailed music prompt object${count > 1 ? 's' : ''} based on this description: "${input}"
 
-For each prompt, provide:
-**Rhythm**
-[Specific tempo, time signature, drum pattern, percussion elements, groove description]
-
-**Style**
-[Primary genre, subgenres, era/style period, mood/atmosphere - NO artist or band names]
-
-**Details**
-[Instruments with specific tones and playing techniques, production characteristics, arrangement structure, vocal style if applicable, mixing approach - Be detailed but DO NOT mention any artist names]
-
-${count > 1 ? `Create ${count} distinctly different variations, each exploring different aspects or interpretations of the original description.` : ''}`;
+Respond ONLY with a JSON array containing ${count} items. Each item must have keys "rhythm", "style", and "details".
+${count > 1 ? `Ensure all ${count} prompts are distinctly different variations exploring different sonic angles.` : ''}`;
 }
 
 function parsePromptSections(text: string): GeneratedPrompt {
@@ -73,16 +65,18 @@ function parsePromptSections(text: string): GeneratedPrompt {
     details: "",
   };
 
-  // Extract sections using regex
-  const rhythmMatch = text.match(/\*\*Rhythm\*\*\s*([\s\S]*?)(?=\*\*Style\*\*|\*\*STyle\*\*|$)/i);
-  const styleMatch = text.match(/\*\*Style\*\*\s*([\s\S]*?)(?=\*\*Details\*\*|\*\*DETAILS\*\*|$)/i);
-  const detailsMatch = text.match(/\*\*Details\*\*\s*([\s\S]*?)(?=\*\*Rhythm\*\*|\*\*Prompt|\*\*---|$)/i);
+  // Flexible regex for rhythm
+  const rhythmMatch = text.match(/(?:#+\s*|\*\*|^|\n)\s*(?:Rhythm|Ritmo)\s*[:*]*\s*([\s\S]*?)(?=(?:#+\s*|\*\*|^|\n)\s*(?:Style|Estilo|Details|Detalhes)|$)/i);
+  // Flexible regex for style
+  const styleMatch = text.match(/(?:#+\s*|\*\*|^|\n)\s*(?:Style|Estilo)\s*[:*]*\s*([\s\S]*?)(?=(?:#+\s*|\*\*|^|\n)\s*(?:Details|Detalhes|Rhythm|Ritmo)|$)/i);
+  // Flexible regex for details
+  const detailsMatch = text.match(/(?:#+\s*|\*\*|^|\n)\s*(?:Details|Detalhes)\s*[:*]*\s*([\s\S]*?)(?=(?:#+\s*|\*\*|^|\n)\s*(?:Rhythm|Ritmo|Style|Estilo|Prompt|\d+\.|---|===)|$)/i);
 
-  if (rhythmMatch) sections.rhythm = rhythmMatch[1].trim();
-  if (styleMatch) sections.style = styleMatch[1].trim();
-  if (detailsMatch) sections.details = detailsMatch[1].trim();
+  if (rhythmMatch) sections.rhythm = rhythmMatch[1].replace(/^[:*\s]+/, '').trim();
+  if (styleMatch) sections.style = styleMatch[1].replace(/^[:*\s]+/, '').trim();
+  if (detailsMatch) sections.details = detailsMatch[1].replace(/^[:*\s]+/, '').trim();
 
-  // If parsing failed, try to use the whole text as details
+  // If parsing failed, fallback to clean text
   if (!sections.rhythm && !sections.style && !sections.details) {
     sections.details = text.trim();
   }
@@ -91,24 +85,62 @@ function parsePromptSections(text: string): GeneratedPrompt {
 }
 
 function parseMultiplePrompts(text: string): GeneratedPrompt[] {
-  // Split by "Prompt" followed by number or by clear separators
-  const promptPattern = /(?:^|\n)(?:Prompt\s*\d+|---+)\s*\n/i;
-  const parts = text.split(promptPattern).filter(part => part.trim());
+  let cleaned = text.trim();
 
-  if (parts.length <= 1) {
-    // Try another splitting pattern for numbered prompts
-    const numberedPattern = /(?:^|\n)\d+\.\s*\n/i;
-    const numberedParts = text.split(numberedPattern).filter(part => part.trim());
-
-    if (numberedParts.length > 1) {
-      return numberedParts.map(parsePromptSections);
-    }
-
-    // Single prompt
-    return [parsePromptSections(text)];
+  // Strip markdown code fences if present (e.g. ```json ... ```)
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
   }
 
-  return parts.map(parsePromptSections);
+  // Tier 1: Try direct JSON parse
+  try {
+    const parsed = JSON.parse(cleaned);
+    const items = Array.isArray(parsed) ? parsed : (parsed.prompts || parsed.data || [parsed]);
+    if (Array.isArray(items) && items.length > 0) {
+      return items.map((item: Record<string, unknown>) => ({
+        rhythm: String(item.rhythm || item.Rhythm || item.groove || "").trim(),
+        style: String(item.style || item.Style || item.genre || "").trim(),
+        details: String(item.details || item.Details || item.instruments || "").trim(),
+      })).filter(p => p.rhythm || p.style || p.details);
+    }
+  } catch {
+    // Ignore JSON error and proceed to Tier 2
+  }
+
+  // Tier 2: Search for JSON array or object inside string using regex
+  const jsonArrayMatch = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
+  if (jsonArrayMatch) {
+    try {
+      const parsedArray = JSON.parse(jsonArrayMatch[0]);
+      if (Array.isArray(parsedArray) && parsedArray.length > 0) {
+        return parsedArray.map((item: Record<string, unknown>) => ({
+          rhythm: String(item.rhythm || item.Rhythm || "").trim(),
+          style: String(item.style || item.Style || "").trim(),
+          details: String(item.details || item.Details || "").trim(),
+        }));
+      }
+    } catch {
+      // Proceed to Tier 3 fallback
+    }
+  }
+
+  // Tier 3: Markdown / Text Splitter Fallback
+  const promptPattern = /(?:^|\n)(?:(?:###?\s*)?(?:Prompt|Option|Variation)\s*\d+|---+|===+)\s*(?:\n|$)/i;
+  const parts = cleaned.split(promptPattern).filter(part => part.trim().length > 10);
+
+  if (parts.length > 1) {
+    return parts.map(parsePromptSections);
+  }
+
+  // Try numbered pattern e.g. "1. ", "2. "
+  const numberedPattern = /(?:^|\n)(?:\d+\.\s+)(?=\*\*|\#|Rhythm|Style)/i;
+  const numberedParts = cleaned.split(numberedPattern).filter(part => part.trim().length > 10);
+
+  if (numberedParts.length > 1) {
+    return numberedParts.map(parsePromptSections);
+  }
+
+  return [parsePromptSections(cleaned)];
 }
 
 

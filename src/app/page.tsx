@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "next-themes";
-import { Settings, Copy, Check, Sparkles, Loader2, Music, Moon, Sun, RefreshCw, ChevronsUpDown } from "lucide-react";
+import { Settings, Copy, Check, Sparkles, Loader2, Music, Moon, Sun, RefreshCw, ChevronsUpDown, Disc, Palette, Sliders, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -57,6 +57,7 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [prompts, setPrompts] = useState<GeneratedPrompt[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [providerOpen, setProviderOpen] = useState(false);
@@ -194,14 +195,24 @@ export default function Home() {
   }, [input, promptCount, temperature, provider, apiKey, model, toast]);
 
   const handleCopy = async (prompt: GeneratedPrompt, index: number) => {
-    const text = `Rhythm\n${prompt.rhythm}\n\nStyle\n${prompt.style}\n\nDetails\n${prompt.details}`;
+    const text = `Rhythm:\n${prompt.rhythm}\n\nStyle:\n${prompt.style}\n\nDetails:\n${prompt.details}`;
     await navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     toast({
       title: "Copied!",
-      description: "Prompt copied to clipboard",
+      description: `Full Prompt ${index + 1} copied to clipboard`,
     });
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleCopySection = async (title: string, content: string, key: string) => {
+    await navigator.clipboard.writeText(content);
+    setCopiedSection(key);
+    toast({
+      title: "Copied section!",
+      description: `${title} copied to clipboard`,
+    });
+    setTimeout(() => setCopiedSection(null), 2000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -528,53 +539,107 @@ export default function Home() {
 
         {/* Generated Prompts */}
         {prompts.length > 0 && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Generated Prompts</h2>
-            <div className="space-y-4">
+          <div className="space-y-6 pt-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <Zap className="w-5 h-5 text-primary" />
+                Generated Prompts ({prompts.length})
+              </h2>
+            </div>
+            <div className="space-y-6">
               {prompts.map((prompt, index) => (
-                <Card key={index} className="relative overflow-hidden">
-                  <CardHeader className="pb-3">
+                <Card key={index} className="relative overflow-hidden border border-border bg-card shadow-lg hover:border-primary/50 transition-all duration-200">
+                  <CardHeader className="pb-3 border-b border-border/60 bg-muted/30">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base font-medium">
-                        Prompt {index + 1}
-                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
+                          {index + 1}
+                        </span>
+                        <CardTitle className="text-base font-bold text-foreground">
+                          Prompt {index + 1}
+                        </CardTitle>
+                      </div>
                       <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="sm"
                         onClick={() => handleCopy(prompt, index)}
-                        className="h-8 gap-1"
+                        className="h-8 gap-1.5 font-medium shadow-sm hover:bg-primary hover:text-primary-foreground transition-all"
                       >
                         {copiedIndex === index ? (
                           <>
-                            <Check className="w-4 h-4 text-green-500" />
-                            Copied
+                            <Check className="w-4 h-4 text-emerald-400" />
+                            Copied All
                           </>
                         ) : (
                           <>
                             <Copy className="w-4 h-4" />
-                            Copy
+                            Copy All
                           </>
                         )}
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 pt-0">
-                    <div>
-                      <h4 className="text-sm font-semibold text-primary mb-1">Rhythm</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {prompt.rhythm}
+                  <CardContent className="space-y-4 pt-4">
+                    {/* Rhythm Box */}
+                    <div className="p-3.5 rounded-lg border border-emerald-500/25 bg-emerald-950/20 dark:bg-emerald-950/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <Disc className="w-3.5 h-3.5" />
+                          Rhythm
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopySection("Rhythm", prompt.rhythm, `rhythm-${index}`)}
+                          className="h-6 px-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20"
+                        >
+                          {copiedSection === `rhythm-${index}` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        </Button>
+                      </div>
+                      <p className="text-sm text-foreground/90 font-medium leading-relaxed pl-1">
+                        {prompt.rhythm || "N/A"}
                       </p>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-primary mb-1">Style</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {prompt.style}
+
+                    {/* Style Box */}
+                    <div className="p-3.5 rounded-lg border border-purple-500/25 bg-purple-950/20 dark:bg-purple-950/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                          <Palette className="w-3.5 h-3.5" />
+                          Style
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopySection("Style", prompt.style, `style-${index}`)}
+                          className="h-6 px-2 text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-500/20"
+                        >
+                          {copiedSection === `style-${index}` ? <Check className="w-3 h-3 text-purple-400" /> : <Copy className="w-3 h-3" />}
+                        </Button>
+                      </div>
+                      <p className="text-sm text-foreground/90 font-medium leading-relaxed pl-1">
+                        {prompt.style || "N/A"}
                       </p>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-primary mb-1">Details</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {prompt.details}
+
+                    {/* Details Box */}
+                    <div className="p-3.5 rounded-lg border border-sky-500/25 bg-sky-950/20 dark:bg-sky-950/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                          <Sliders className="w-3.5 h-3.5" />
+                          Details
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopySection("Details", prompt.details, `details-${index}`)}
+                          className="h-6 px-2 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-500/20"
+                        >
+                          {copiedSection === `details-${index}` ? <Check className="w-3 h-3 text-sky-400" /> : <Copy className="w-3 h-3" />}
+                        </Button>
+                      </div>
+                      <p className="text-sm text-foreground/90 font-medium leading-relaxed pl-1">
+                        {prompt.details || "N/A"}
                       </p>
                     </div>
                   </CardContent>
