@@ -720,6 +720,39 @@ export default function Home() {
                         );
                       })}
                   </div>
+
+                  {/* Save Settings Footer */}
+                  <div className="pt-4 border-t-2 border-border flex items-center justify-end gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSettingsOpen(false)}
+                      className="font-bold border-2 border-border rounded-xl"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (sessionStatus === "authenticated") {
+                          fetch("/api/user/settings", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ provider, model, theme, providerConfigs }),
+                          }).catch((err) => console.error("Failed to sync settings:", err));
+                        }
+                        setSettingsOpen(false);
+                        toast({
+                          title: "Settings Saved 🎉",
+                          description: "Your provider configurations and active models have been saved.",
+                        });
+                      }}
+                      className="font-bold bg-sky-600 hover:bg-sky-500 text-white gap-2 shadow-md px-6 rounded-xl"
+                    >
+                      <Check className="w-4 h-4" />
+                      Save Settings
+                    </Button>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
@@ -939,95 +972,107 @@ export default function Home() {
               </span>
             </div>
 
-            <Popover open={groupedModelOpen} onOpenChange={setGroupedModelOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={groupedModelOpen}
-                  className="w-full justify-between font-normal bg-input border-2 border-border hover:bg-accent text-foreground h-12 shadow-sm rounded-xl"
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40 text-xs font-bold">
-                      {selectedProvider?.name || provider}
-                    </Badge>
-                    <span className="truncate font-bold text-foreground text-sm">
-                      {model || "Select a model..."}
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-80 text-muted-foreground" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
-                <Command shouldFilter={false} className="bg-card text-card-foreground">
-                  <CommandInput
-                    placeholder="Search model or provider..."
-                    value={groupedModelQuery}
-                    onValueChange={setGroupedModelQuery}
-                    className="bg-input text-foreground border-border h-11 font-medium"
-                  />
-                  <CommandList className="max-h-80">
-                    <CommandEmpty className="p-4 text-xs text-muted-foreground text-center font-medium">
-                      No matching models found. Enable more providers in Settings!
-                    </CommandEmpty>
-                    {groupedEnabledModels.map(({ provider: p, models: pModels }) => {
-                      const q = groupedModelQuery.trim().toLowerCase();
-                      const filtered = pModels.filter((m) => {
-                        if (!q) return true;
+            {!model || groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0) === 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSettingsOpen(true)}
+                className="w-full justify-center gap-2 font-bold bg-sky-500/15 border-2 border-sky-500/60 hover:bg-sky-500 hover:text-white text-sky-600 dark:text-sky-300 h-12 shadow-sm rounded-xl cursor-pointer"
+              >
+                <Zap className="w-4 h-4 text-sky-500" />
+                <span>Click here to Add or Enable AI Models in Settings</span>
+              </Button>
+            ) : (
+              <Popover open={groupedModelOpen} onOpenChange={setGroupedModelOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={groupedModelOpen}
+                    className="w-full justify-between font-normal bg-input border-2 border-border hover:bg-accent text-foreground h-12 shadow-sm rounded-xl"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40 text-xs font-bold">
+                        {selectedProvider?.name || provider}
+                      </Badge>
+                      <span className="truncate font-bold text-foreground text-sm">
+                        {model}
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-80 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
+                  <Command shouldFilter={false} className="bg-card text-card-foreground">
+                    <CommandInput
+                      placeholder="Search model or provider..."
+                      value={groupedModelQuery}
+                      onValueChange={setGroupedModelQuery}
+                      className="bg-input text-foreground border-border h-11 font-medium"
+                    />
+                    <CommandList className="max-h-80">
+                      <CommandEmpty className="p-4 text-xs text-muted-foreground text-center font-medium">
+                        No matching models found. Enable more providers in Settings!
+                      </CommandEmpty>
+                      {groupedEnabledModels.map(({ provider: p, models: pModels }) => {
+                        const q = groupedModelQuery.trim().toLowerCase();
+                        const filtered = pModels.filter((m) => {
+                          if (!q) return true;
+                          return (
+                            m.name.toLowerCase().includes(q) ||
+                            m.id.toLowerCase().includes(q) ||
+                            p.name.toLowerCase().includes(q)
+                          );
+                        });
+
+                        if (filtered.length === 0) return null;
+
                         return (
-                          m.name.toLowerCase().includes(q) ||
-                          m.id.toLowerCase().includes(q) ||
-                          p.name.toLowerCase().includes(q)
-                        );
-                      });
+                          <CommandGroup key={p.id} heading={p.name} className="text-sky-500 font-bold text-xs uppercase px-2 py-1.5">
+                            {filtered.map((m) => {
+                              const isSelected = provider === p.id && model === m.id;
+                              const key = getActiveProviderKey(p.id);
 
-                      if (filtered.length === 0) return null;
-
-                      return (
-                        <CommandGroup key={p.id} heading={p.name} className="text-sky-500 font-bold text-xs uppercase px-2 py-1.5">
-                          {filtered.map((m) => {
-                            const isSelected = provider === p.id && model === m.id;
-                            const key = getActiveProviderKey(p.id);
-
-                            return (
-                              <CommandItem
-                                key={`${p.id}-${m.id}`}
-                                value={`${p.id}-${m.id}`}
-                                onSelect={() => {
-                                  setProvider(p.id);
-                                  setModel(m.id);
-                                  if (key) setApiKey(key);
-                                  setGroupedModelOpen(false);
-                                  setGroupedModelQuery("");
-                                  toast({
-                                    title: "Switched Active Model",
-                                    description: `${p.name} → ${m.name}`,
-                                  });
-                                }}
-                                className={`cursor-pointer text-foreground aria-selected:bg-accent flex items-center justify-between p-2.5 rounded-lg border-2 my-1 ${
-                                  isSelected ? "border-sky-500 bg-sky-500/20" : "border-border bg-input hover:bg-accent"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Check className={`h-4 w-4 text-sky-500 shrink-0 ${isSelected ? "opacity-100" : "opacity-0"}`} />
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="font-bold text-sm truncate text-foreground">{m.name}</span>
-                                    <span className="text-[11px] text-muted-foreground font-mono truncate">
-                                      {p.name} • {m.id}
-                                    </span>
+                              return (
+                                <CommandItem
+                                  key={`${p.id}-${m.id}`}
+                                  value={`${p.id}-${m.id}`}
+                                  onSelect={() => {
+                                    setProvider(p.id);
+                                    setModel(m.id);
+                                    if (key) setApiKey(key);
+                                    setGroupedModelOpen(false);
+                                    setGroupedModelQuery("");
+                                    toast({
+                                      title: "Switched Active Model",
+                                      description: `${p.name} → ${m.name}`,
+                                    });
+                                  }}
+                                  className={`cursor-pointer text-foreground aria-selected:bg-accent flex items-center justify-between p-2.5 rounded-lg border-2 my-1 ${
+                                    isSelected ? "border-sky-500 bg-sky-500/20" : "border-border bg-input hover:bg-accent"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <Check className={`h-4 w-4 text-sky-500 shrink-0 ${isSelected ? "opacity-100" : "opacity-0"}`} />
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="font-bold text-sm truncate text-foreground">{m.name}</span>
+                                      <span className="text-[11px] text-muted-foreground font-mono truncate">
+                                        {p.name} • {m.id}
+                                      </span>
+                                    </div>
                                   </div>
-                                </div>
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      );
-                    })}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        );
+                      })}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
 
           {/* Quick Suggestions */}
