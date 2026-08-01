@@ -188,27 +188,33 @@ async function generateWithOpenAICompatible(
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`Provider API error (${provider} - ${model} - ${response.status}):`, errorText);
-    let errorMessage = `${providerConfig.name} API error (${response.status})`;
-    
     try {
-      const errorJson = JSON.parse(errorText);
-      if (errorJson.error?.message) {
+      const parsed = JSON.parse(errorText);
+      const errorJson = Array.isArray(parsed) ? parsed[0] : parsed;
+
+      if (errorJson?.error?.message) {
         errorMessage = errorJson.error.message;
-      } else if (errorJson.error) {
+      } else if (errorJson?.error) {
         errorMessage = typeof errorJson.error === 'string' ? errorJson.error : JSON.stringify(errorJson.error);
-      } else if (errorJson.message) {
+      } else if (errorJson?.message) {
         errorMessage = errorJson.message;
       }
     } catch {
-      if (errorText.includes('Forbidden') || response.status === 403) {
-        errorMessage = 'Access forbidden. Your API key may be invalid or restricted.';
-      } else if (response.status === 401) {
-        errorMessage = 'Invalid API key. Please check your key in Settings.';
-      } else if (response.status === 429) {
-        errorMessage = 'Rate limit exceeded for this model. Please try another model or wait a moment.';
-      } else if (response.status === 404) {
-        errorMessage = `Model '${model}' not found for ${providerConfig.name}. Please select a supported model.`;
+      // Ignore JSON parse failure
+    }
+
+    if (response.status === 429 || errorMessage.toLowerCase().includes("quota") || errorMessage.toLowerCase().includes("rate limit")) {
+      if (provider === "google") {
+        errorMessage = `Google AI Free Tier quota reached for '${model}' (Limit: 20 requests). Please wait 1 minute or switch to another model (e.g. Gemini 2.5 Flash, Groq, or OpenRouter).`;
+      } else {
+        errorMessage = `Rate limit reached for model '${model}'. Please wait a moment or select another model in Settings.`;
       }
+    } else if (response.status === 401) {
+      errorMessage = `Invalid API key for ${providerConfig.name}. Please check your credentials in Settings.`;
+    } else if (response.status === 403) {
+      errorMessage = `Access forbidden for ${providerConfig.name}. Your API key may be invalid or restricted.`;
+    } else if (response.status === 404) {
+      errorMessage = `Model '${model}' not found for ${providerConfig.name}. Please select another model in Settings.`;
     }
     
     throw new Error(errorMessage);
