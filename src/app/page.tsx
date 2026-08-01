@@ -123,8 +123,8 @@ export default function Home() {
     }
   }, [prompts]);
 
-  const isHydratedRef = useState({ current: false })[0];
-  const lastSyncedRef = useState({ current: "" })[0];
+  const isHydratedRef = useRef(false);
+  const lastSyncedRef = useRef("");
 
   // Sync user settings from database on login
   useEffect(() => {
@@ -1348,7 +1348,7 @@ export default function Home() {
 
           {/* Copyright & GitHub SVG Icon Link */}
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-            <span>© {new Date().getFullYear()} ViaWeb. All rights reserved.</span>
+            <span suppressHydrationWarning>© {new Date().getFullYear()} ViaWeb. All rights reserved.</span>
 
             <a
               href="https://github.com/rodrigocaetanooficial/AIMusicPromptGenerator"
