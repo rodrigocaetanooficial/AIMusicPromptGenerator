@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     const configsMap: Record<string, any> = {};
     user.providerConfigs.forEach((cfg) => {
       configsMap[cfg.providerId] = {
-        apiKey: cfg.apiKey,
+        apiKey: decrypt(cfg.apiKey), // Decrypt for the authenticated user
         enabled: cfg.enabled,
         disabledModels: JSON.parse(cfg.disabledModels || "[]"),
         fetchedModels: JSON.parse(cfg.fetchedModels || "[]"),
@@ -82,9 +83,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Upsert UserProviderConfig items
+    // Upsert UserProviderConfig items with AES-256-GCM encryption
     if (providerConfigs && typeof providerConfigs === "object") {
       for (const [pId, cfg] of Object.entries<any>(providerConfigs)) {
+        const encryptedKey = encrypt(cfg.apiKey || "");
         await prisma.userProviderConfig.upsert({
           where: {
             userId_providerId: {
@@ -93,7 +95,7 @@ export async function POST(req: NextRequest) {
             },
           },
           update: {
-            apiKey: cfg.apiKey || "",
+            apiKey: encryptedKey,
             enabled: cfg.enabled ?? true,
             disabledModels: JSON.stringify(cfg.disabledModels || []),
             fetchedModels: JSON.stringify(cfg.fetchedModels || []),
@@ -101,7 +103,7 @@ export async function POST(req: NextRequest) {
           create: {
             userId: user.id,
             providerId: pId,
-            apiKey: cfg.apiKey || "",
+            apiKey: encryptedKey,
             enabled: cfg.enabled ?? true,
             disabledModels: JSON.stringify(cfg.disabledModels || []),
             fetchedModels: JSON.stringify(cfg.fetchedModels || []),

@@ -3,6 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useSession, signIn, signOut } from "next-auth/react";
 import {
@@ -1346,9 +1347,19 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Copyright & GitHub SVG Icon Link */}
+          {/* Copyright & Links */}
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <span suppressHydrationWarning>© {new Date().getFullYear()} ViaWeb. All rights reserved.</span>
+
+            <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground">
+              <Link href="/privacy" className="hover:text-sky-500 transition-colors">
+                Privacy Policy
+              </Link>
+              <span>•</span>
+              <Link href="/terms" className="hover:text-sky-500 transition-colors">
+                Terms of Service
+              </Link>
+            </div>
 
             <a
               href="https://github.com/rodrigocaetanooficial/AIMusicPromptGenerator"
