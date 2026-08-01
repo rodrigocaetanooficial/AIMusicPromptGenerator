@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
   },
+  verification: {
+    google: "muBojmZJeaB-Y201dx2ZEJ8wGWqEaef6u33dD8lVBAU",
+  },
 };
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
