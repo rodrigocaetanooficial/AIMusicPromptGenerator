@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTheme } from "next-themes";
 import { useSession, signIn, signOut } from "next-auth/react";
 import {
@@ -107,9 +107,21 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  const resultsRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Auto-scroll to generated prompts section when available
+  useEffect(() => {
+    if (prompts.length > 0) {
+      const timer = setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [prompts]);
 
   const isHydratedRef = useState({ current: false })[0];
   const lastSyncedRef = useState({ current: "" })[0];
@@ -1178,7 +1190,7 @@ export default function Home() {
 
         {/* Results Section */}
         {prompts.length > 0 && (
-          <div className="space-y-6 pt-2">
+          <div ref={resultsRef} className="space-y-6 pt-2 scroll-mt-24">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-sky-500" />
