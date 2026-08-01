@@ -34,6 +34,7 @@ jobs:
         env:
           NODE_ENV: production
           DATABASE_URL: "file:./dev.db"
+          NEXT_PUBLIC_GA_ID: "G-XYR5JY1Z3N"
 
       - name: Pack standalone release
         run: |
