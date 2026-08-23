@@ -50,6 +50,13 @@ jobs:
           if [ -d public ]; then
             cp -a public release/public
           fi
+          # Bundle the Prisma CLI so deploy.sh can run db push on the VPS
+          # (the standalone output omits it — without this, schema changes
+          # silently never reach the production SQLite database).
+          PRISMA_VERSION=$(node -p "require('./package.json').dependencies.prisma")
+          mkdir -p release/prisma-cli
+          cp prisma/schema.prisma release/prisma-cli/schema.prisma
+          (cd release/prisma-cli && npm init -y >/dev/null 2>&1 && npm install "prisma@$PRISMA_VERSION" --no-audit --no-fund --loglevel=error)
           # Ensure server.js exists
           test -f release/server.js
           tar -C release -czf ai-music-release.tgz .
