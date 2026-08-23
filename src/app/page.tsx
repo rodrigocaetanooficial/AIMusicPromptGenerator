@@ -40,7 +40,6 @@ import {
   Waves,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
@@ -477,27 +476,26 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
       {/* Header */}
-      <header className="sticky-header">
-        <div className="container">
-          <div className="header-inner">
-            <div className="brand">
-              <div className="brand-icon">
-                <Music className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="brand-title">Music Prompt Generator</div>
-                <div className="brand-subtitle">AI Sound &amp; Track Architect</div>
-              </div>
+      <header>
+        <div className="wrap h-in">
+          <div className="brand">
+            <div className="logo" aria-hidden="true">
+              <Music className="w-[18px] h-[18px]" />
             </div>
+            <div>
+              <h1 className="font-display text-base font-bold tracking-tight">Music Prompt Studio</h1>
+              <p>Ideas in, studio-ready prompts out</p>
+            </div>
+          </div>
 
-            <div className="header-actions">
+          <div className="h-actions">
             {/* Quick Theme Switcher Button */}
             {mounted && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                className="btn-icon-label"
+                className="btn"
                 title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
               >
                 {isDark ? (
@@ -517,14 +515,14 @@ export default function Home() {
             {/* Settings Dialog Trigger */}
             <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="btn-icon-label">
-                  <Settings className="w-4 h-4 text-sky-500" />
+                <Button variant="outline" size="sm" className="btn">
+                  <Settings className="w-4 h-4 text-primary" />
                   <span className="hidden sm:inline">Settings</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-2 border-border text-card-foreground p-6 shadow-2xl rounded-2xl">
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-bold flex items-center gap-2 text-sky-500">
+                  <DialogTitle className="text-xl font-bold flex items-center gap-2 text-primary">
                     <Cpu className="w-5 h-5" />
                     Provider & Model Manager
                   </DialogTitle>
@@ -538,7 +536,7 @@ export default function Home() {
                   <div className="flex items-center justify-between p-4 rounded-xl border-2 border-border bg-secondary/80 shadow-sm">
                     <div className="flex items-center gap-3">
                       {isDark ? (
-                        <Moon className="w-5 h-5 text-sky-400" />
+                        <Moon className="w-5 h-5 text-primary" />
                       ) : (
                         <Sun className="w-5 h-5 text-amber-500" />
                       )}
@@ -561,7 +559,7 @@ export default function Home() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-base font-bold text-foreground flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-sky-500" />
+                        <Zap className="w-4 h-4 text-primary" />
                         Configure AI Providers ({providers.length})
                       </Label>
                     </div>
@@ -572,7 +570,7 @@ export default function Home() {
                         placeholder="Search providers (Google, OpenRouter, Groq, OpenAI...)"
                         value={providerSearch}
                         onChange={(e) => setProviderSearch(e.target.value)}
-                        className="pl-10 h-11 bg-input border-2 border-border text-foreground placeholder:text-muted-foreground font-medium rounded-xl shadow-sm focus:border-sky-500"
+                        className="pl-10 h-11 bg-input border-2 border-border text-foreground placeholder:text-muted-foreground font-medium rounded-xl shadow-sm focus:border-primary"
                       />
                     </div>
                   </div>
@@ -598,7 +596,7 @@ export default function Home() {
                             key={p.id}
                             className={`rounded-xl border-2 transition-all duration-200 ${
                               isSelected
-                                ? "border-sky-500 bg-sky-500/10 shadow-md"
+                                ? "border-primary bg-primary/10 shadow-md"
                                 : cfg.enabled
                                 ? "border-border bg-card"
                                 : "border-border/50 bg-muted/30 opacity-75"
@@ -620,7 +618,7 @@ export default function Home() {
                                   <div className="flex items-center gap-2">
                                     <span className="font-bold text-foreground text-base">{p.name}</span>
                                     {isSelected && (
-                                      <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40 text-[10px] font-bold">
+                                      <Badge className="bg-primary/20 text-primary dark:text-primary border border-primary/40 text-[10px] font-bold">
                                         Active Default
                                       </Badge>
                                     )}
@@ -677,9 +675,9 @@ export default function Home() {
                                           className="shrink-0 gap-1.5 bg-secondary text-secondary-foreground border-2 border-border font-bold rounded-xl h-10"
                                         >
                                           {loadingProviderId === p.id ? (
-                                            <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
+                                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
                                           ) : (
-                                            <RefreshCw className="w-4 h-4 text-sky-500" />
+                                            <RefreshCw className="w-4 h-4 text-primary" />
                                           )}
                                           Fetch Models
                                         </Button>
@@ -724,7 +722,7 @@ export default function Home() {
                                             key={m.id}
                                             className={`flex items-center justify-between p-2.5 rounded-lg border-2 text-xs transition-colors ${
                                               isCurrentModel
-                                                ? "border-sky-500 bg-sky-500/20 text-foreground"
+                                                ? "border-primary bg-primary/20 text-foreground"
                                                 : isModelDisabled
                                                 ? "border-border bg-muted/40 text-muted-foreground opacity-60"
                                                 : "border-border bg-card text-foreground hover:bg-accent"
@@ -734,7 +732,7 @@ export default function Home() {
                                               <div className="flex items-center gap-1.5">
                                                 <span className="font-bold truncate text-foreground">{m.name}</span>
                                                 {isCurrentModel && (
-                                                  <Badge className="bg-sky-500/30 text-sky-600 dark:text-sky-300 text-[9px] px-1.5 font-bold">
+                                                  <Badge className="bg-primary/30 text-primary dark:text-primary text-[9px] px-1.5 font-bold">
                                                     Selected
                                                   </Badge>
                                                 )}
@@ -760,7 +758,7 @@ export default function Home() {
                                                     description: `${p.name} - ${m.name}`,
                                                   });
                                                 }}
-                                                className="h-6 px-2 text-[10px] bg-secondary hover:bg-sky-600 hover:text-white border border-border font-bold"
+                                                className="h-6 px-2 text-[10px] bg-secondary hover:bg-primary hover:text-white border border-border font-bold"
                                               >
                                                 Use
                                               </Button>
@@ -810,7 +808,7 @@ export default function Home() {
                           description: "Your provider configurations and active models have been saved.",
                         });
                       }}
-                      className="font-bold bg-sky-600 hover:bg-sky-500 text-white gap-2 shadow-md px-6 rounded-xl"
+                      className="font-bold bg-primary hover:bg-primary text-white gap-2 shadow-md px-6 rounded-xl"
                     >
                       <Check className="w-4 h-4" />
                       Save Settings
@@ -826,7 +824,7 @@ export default function Home() {
                 {session.user.image ? (
                   <img src={session.user.image} alt="User" className="w-7 h-7 rounded-lg" />
                 ) : (
-                  <div className="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-500 font-bold text-xs flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-lg bg-primary/20 text-primary font-bold text-xs flex items-center justify-center">
                     {session.user.name?.[0]?.toUpperCase() || "U"}
                   </div>
                 )}
@@ -851,38 +849,43 @@ export default function Home() {
                   setAuthMessage(null);
                   setAuthOpen(true);
                 }}
-                className="btn-icon-label"
+                className="btn btn-primary"
               >
-                <LogIn className="w-3.5 h-3.5 text-sky-400" />
+                <LogIn className="w-3.5 h-3.5" />
                 <span>Sign In / Register</span>
               </Button>
             )}
             </div>
-          </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="hero container">
-        <div className="badge-pill">
-          <Sparkles className="w-3.5 h-3.5" />
-          Studio Engine v2.4 · Suno &amp; Udio Optimized
+      <section className="hero wrap">
+        <div className="eyebrow">
+          <Sparkles className="w-3 h-3" />
+          AI Music Prompt Studio
         </div>
-        <h1 className="hero-title">
-          Transform Musical Ideas into <span>Structured Prompts</span>
+        <h1>
+          Your next track starts with a <em>great prompt</em>.
         </h1>
-        <p className="hero-subtitle">
-          High-fidelity prompts divided into Rhythm, Style, and Technical Details for next-generation
-          text-to-music engines.
+        <p>
+          One line of inspiration becomes a precise, production-ready prompt — rhythm, style and
+          technical detail — for every AI music platform.
         </p>
+        <div className="chips-row" aria-label="Supported platforms">
+          <span className="chip"><Music className="w-3.5 h-3.5" />Suno</span>
+          <span className="chip"><Music className="w-3.5 h-3.5" />Udio</span>
+          <span className="chip"><Music className="w-3.5 h-3.5" />Music Flow</span>
+          <span className="chip"><Music className="w-3.5 h-3.5" />Mureka</span>
+        </div>
       </section>
 
       {/* Save-settings notice for logged-out users (dismissible) */}
       {sessionStatus === "unauthenticated" && !noticeDismissed && (
-        <div className="max-w-6xl mx-auto px-4 pt-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border-2 border-sky-500/40 bg-sky-500/10 dark:bg-sky-950/40 shadow-sm">
+        <div className="wrap pt-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border-2 border-primary/40 bg-primary/10 dark:bg-primary/20 shadow-sm">
             <div className="flex items-start sm:items-center gap-3">
-              <UserPlus className="w-5 h-5 text-sky-500 shrink-0 mt-0.5 sm:mt-0" />
+              <UserPlus className="w-5 h-5 text-primary shrink-0 mt-0.5 sm:mt-0" />
               <p className="text-sm font-semibold text-foreground leading-relaxed">
                 Save your preferred AI models, prompt settings, and custom theme across devices. Create a free account or sign in.
               </p>
@@ -897,7 +900,7 @@ export default function Home() {
                 }}
                 className="h-8 gap-1.5 font-bold border-2 border-border bg-secondary hover:bg-accent text-foreground rounded-xl shadow-sm"
               >
-                <UserPlus className="w-3.5 h-3.5 text-sky-500" />
+                <UserPlus className="w-3.5 h-3.5 text-primary" />
                 Register
               </Button>
               <Button
@@ -906,7 +909,7 @@ export default function Home() {
                   setAuthMode("login");
                   setAuthOpen(true);
                 }}
-                className="h-8 gap-1.5 font-bold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md"
+                className="h-8 gap-1.5 font-bold bg-primary hover:bg-primary text-white rounded-xl shadow-md"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 Sign In
@@ -929,7 +932,7 @@ export default function Home() {
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
         <DialogContent className="sm:max-w-md bg-card border-2 border-border text-card-foreground p-6 shadow-2xl rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-sky-500">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-primary">
               {authMode === "login" ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
               {authMode === "login" ? "Sign In to Your Account" : "Create Your Account"}
             </DialogTitle>
@@ -1033,7 +1036,7 @@ export default function Home() {
               <Button
                 type="submit"
                 disabled={authLoading}
-                className="w-full h-11 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl mt-2 shadow-md"
+                className="w-full h-11 bg-primary hover:bg-primary text-white font-bold rounded-xl mt-2 shadow-md"
               >
                 {authLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1053,7 +1056,7 @@ export default function Home() {
                   setAuthMessage(null);
                   setAuthMode(authMode === "login" ? "register" : "login");
                 }}
-                className="text-xs text-sky-500 hover:underline font-bold"
+                className="text-xs text-primary hover:underline font-bold"
               >
                 {authMode === "login"
                   ? "Don't have an account? Register here"
@@ -1065,103 +1068,77 @@ export default function Home() {
       </Dialog>
 
       {/* Main Content */}
-      <main className="container">
+      <main className="wrap">
         {/* Main Prompter Card */}
-        <section className="generator-card">
-          <div className="form-group">
-            <div className="label-row">
-              <label className="field-label" htmlFor="music-idea">
-                <Music className="w-4 h-4" />
-                Your Musical Idea
-              </label>
-              <span className="field-hint">Press Ctrl + Enter to generate</span>
-            </div>
-            <textarea
-              id="music-idea"
-              className="textarea-custom"
-              placeholder="e.g. 80s synthwave with analog warm synths, driving drum machine, nocturnal synth-pop mood"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
+        <section className="studio">
+          <div className="label-row">
+            <label className="field-label" htmlFor="music-idea">
+              <Music className="w-4 h-4" />
+              Musical idea
+            </label>
+            <span className="field-hint">Ctrl + Enter to generate</span>
           </div>
+          <textarea
+            id="music-idea"
+            placeholder="e.g. a warm lo-fi beat with dusty vinyl, Rhodes piano and a rainy-night mood…"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
 
           {/* Provider & Model */}
-          <div className="dropdowns-grid">
-              {/* Provider Select */}
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <div className="label-row">
-                  <label className="field-label" htmlFor="provider-select">
-                    <Cpu className="w-4 h-4" />
-                    AI Provider
-                  </label>
-                </div>
-                <div className="select-wrap">
-                  <select
-                    id="provider-select"
-                    className="custom-select"
-                    value={provider}
-                    onChange={(e) => {
-                      const pid = e.target.value;
-                      setProvider(pid);
-                      const key = getActiveProviderKey(pid);
-                      if (key) setApiKey(key);
-                      toast({
-                        title: "Provider Switched",
-                        description: providers.find((p) => p.id === pid)?.name || pid,
-                      });
-                    }}
-                  >
-                    {providers.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                  <svg className="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
-              </div>
-
-              {/* Model Select */}
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <div className="label-row">
-                  <label className="field-label" htmlFor="model-search">
-                    <Search className="w-4 h-4" />
-                    Model Search
-                  </label>
-                  <span className="field-hint">
-                    {groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0)} models active
-                  </span>
-                </div>
-                {!model || groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0) === 0 ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSettingsOpen(true)}
-                    className="w-full justify-center gap-2 font-bold bg-sky-500/15 border border-sky-500/60 hover:bg-sky-500 hover:text-white text-sky-600 dark:text-sky-300 h-12 shadow-sm rounded-xl cursor-pointer"
-                  >
-                    <Zap className="w-4 h-4 text-sky-500" />
-                    <span>Click here to Add or Enable AI Models in Settings</span>
-                  </Button>
-                ) : (
-                  <Popover open={groupedModelOpen} onOpenChange={setGroupedModelOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={groupedModelOpen}
-                        className="model-search-input"
-                      >
-                        <div className="flex items-center gap-2 truncate w-full">
-                          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-                          <span className="truncate font-bold text-foreground text-sm">
-                            {model}
-                          </span>
-                        </div>
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-80 text-muted-foreground" />
-                      </Button>
-                    </PopoverTrigger>
+          <div className="selects">
+            <div className="select-wrap">
+              <select
+                id="provider-select"
+                className="custom-select"
+                aria-label="AI Provider"
+                value={provider}
+                onChange={(e) => {
+                  const pid = e.target.value;
+                  setProvider(pid);
+                  const key = getActiveProviderKey(pid);
+                  if (key) setApiKey(key);
+                  toast({
+                    title: "Provider Switched",
+                    description: providers.find((p) => p.id === pid)?.name || pid,
+                  });
+                }}
+              >
+                {providers.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div className="select-wrap">
+              {!model || groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0) === 0 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSettingsOpen(true)}
+                  className="w-full h-11 justify-center gap-2 font-semibold text-sm border border-border bg-secondary hover:bg-accent text-foreground rounded-[12px] cursor-pointer"
+                >
+                  <Zap className="w-4 h-4 text-primary" />
+                  <span>Add or Enable AI Models in Settings</span>
+                </Button>
+              ) : (
+                <Popover open={groupedModelOpen} onOpenChange={setGroupedModelOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={groupedModelOpen}
+                      aria-label="AI Model"
+                      className="custom-select flex items-center justify-between font-normal"
+                    >
+                      <span className="truncate">{model}</span>
+                      <ChevronsUpDown className="w-4 h-4 shrink-0 opacity-60" />
+                    </Button>
+                  </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
                   <Command shouldFilter={false} className="bg-card text-card-foreground">
                     <CommandInput
@@ -1188,7 +1165,7 @@ export default function Home() {
                         if (filtered.length === 0) return null;
 
                         return (
-                          <CommandGroup key={p.id} heading={p.name} className="text-sky-500 font-bold text-xs uppercase px-2 py-1.5">
+                          <CommandGroup key={p.id} heading={p.name} className="text-primary font-bold text-xs uppercase px-2 py-1.5">
                             {filtered.map((m) => {
                               const isSelected = provider === p.id && model === m.id;
                               const key = getActiveProviderKey(p.id);
@@ -1209,11 +1186,11 @@ export default function Home() {
                                     });
                                   }}
                                   className={`cursor-pointer text-foreground aria-selected:bg-accent flex items-center justify-between p-2.5 rounded-lg border-2 my-1 ${
-                                    isSelected ? "border-sky-500 bg-sky-500/20" : "border-border bg-input hover:bg-accent"
+                                    isSelected ? "border-primary bg-primary/20" : "border-border bg-input hover:bg-accent"
                                   }`}
                                 >
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <Check className={`h-4 w-4 text-sky-500 shrink-0 ${isSelected ? "opacity-100" : "opacity-0"}`} />
+                                    <Check className={`h-4 w-4 text-primary shrink-0 ${isSelected ? "opacity-100" : "opacity-0"}`} />
                                     <div className="flex flex-col min-w-0">
                                       <span className="font-bold text-sm truncate text-foreground">{m.name}</span>
                                       <span className="text-[11px] text-muted-foreground font-mono truncate">
@@ -1235,42 +1212,37 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Quick Suggestions */}
-          <div className="space-y-2">
-            <span className="presets-label">
-              <Sparkles className="w-3.5 h-3.5" />
-              Try an example prompt
-            </span>
-            <div className="presets-wrap">
+          <div className="presets-label">Try an example</div>
+          <div className="presets">
               {[
                 {
                   label: "80s Synthwave",
-                  icon: <Music className="w-3.5 h-3.5" />,
+                  icon: <Music className="w-3 h-3" />,
                   prompt: "nostalgic 80s synthwave with warm analog Juno-106 pads, a punchy TR-808 drum machine, and a neon-soaked late-night highway mood",
                 },
                 {
                   label: "Lo-Fi Chill",
-                  icon: <Headphones className="w-3.5 h-3.5" />,
+                  icon: <Headphones className="w-3 h-3" />,
                   prompt: "relaxing lo-fi hip hop with a mellow Fender Rhodes electric piano, vinyl crackle texture and a smooth boom-bap beat",
                 },
                 {
                   label: "Epic Orchestral",
-                  icon: <Volume2 className="w-3.5 h-3.5" />,
+                  icon: <Volume2 className="w-3 h-3" />,
                   prompt: "epic cinematic orchestral score with powerful brass sections, fast strings, deep taiko percussion and a heroic rising finale",
                 },
                 {
                   label: "Dark Techno",
-                  icon: <Flame className="w-3.5 h-3.5" />,
+                  icon: <Flame className="w-3 h-3" />,
                   prompt: "dark industrial techno at 142 BPM with distorted metal percussion, a heavy 909 kick, white noise risers and an aggressive drop",
                 },
                 {
                   label: "Smooth Jazz",
-                  icon: <Radio className="w-3.5 h-3.5" />,
+                  icon: <Radio className="w-3 h-3" />,
                   prompt: "smooth jazz quartet with soulful saxophone solo, walking acoustic bass, and brushed drums",
                 },
                 {
                   label: "Cinematic Ambient",
-                  icon: <Waves className="w-3.5 h-3.5" />,
+                  icon: <Waves className="w-3 h-3" />,
                   prompt: "ambient cinematic soundscape with slow evolving pads, soft piano motifs, airy textures and a vast open atmosphere",
                 },
               ].map((item, idx) => (
@@ -1278,184 +1250,170 @@ export default function Home() {
                   key={idx}
                   type="button"
                   onClick={() => setInput(item.prompt)}
-                  className="chip-btn"
+                  className="preset"
                 >
                   {item.icon}
                   {item.label}
                 </button>
               ))}
-            </div>
           </div>
 
-          {/* Sliders Grid */}
-          <div className="controls-grid">
+          <div className="controls">
             <div className="control-box">
-              <div className="control-header">
-                <span className="control-title">Number of Prompts</span>
-                <span id="prompt-count-val" className="control-val-badge">{promptCount}</span>
+              <div className="control-head">
+                <span className="control-title">Number of prompts</span>
+                <span className="control-val">{promptCount}</span>
               </div>
-              <Slider
-                value={[promptCount]}
-                onValueChange={([val]) => setPromptCount(val)}
+              <input
+                type="range"
                 min={1}
                 max={10}
                 step={1}
+                value={promptCount}
+                onChange={(e) => setPromptCount(Number(e.target.value))}
+                aria-label="Number of prompts"
               />
             </div>
 
             <div className="control-box">
-              <div className="control-header">
-                <span className="control-title">Creativity (Temperature)</span>
-                <span id="creativity-val" className="control-val-badge">{temperature.toFixed(1)}</span>
+              <div className="control-head">
+                <span className="control-title">Creativity</span>
+                <span className="control-val">{temperature.toFixed(1)}</span>
               </div>
-              <Slider
-                value={[temperature]}
-                onValueChange={([val]) => setTemperature(val)}
+              <input
+                type="range"
                 min={0.1}
                 max={1.5}
                 step={0.1}
+                value={temperature}
+                onChange={(e) => setTemperature(Number(e.target.value))}
+                aria-label="Creativity"
               />
             </div>
           </div>
 
-          {/* Generate Button */}
-          <button type="button" className="btn-generate" onClick={handleGenerate} disabled={isGenerating || input.trim().length < 3 || !selectedProvider}>
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Generating Prompts...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                Generate {promptCount} {promptCount > 1 ? "Prompts" : "Prompt"}
-              </>
-            )}
-          </button>
+          <div className="gen-row">
+            <span className="hint">Works with Suno · Udio · Music Flow · Mureka</span>
+            <button type="button" className="btn-gen" onClick={handleGenerate} disabled={isGenerating || input.trim().length < 3 || !selectedProvider}>
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Generate prompts
+                </>
+              )}
+            </button>
+          </div>
         </section>
 
         {/* Results Section */}
         {prompts.length > 0 && (
-          <div ref={resultsRef} className="space-y-6 pt-2 scroll-mt-24">
-            <div className="section-title-row">
-              <h2 className="section-title">
-                <Sparkles className="w-5 h-5" />
-                Structured Prompt Output
-              </h2>
-              <span className="field-hint">Ready for Suno &amp; Udio</span>
+          <div ref={resultsRef} className="space-y-4 pt-2 scroll-mt-24">
+            <div className="results-head">
+              <h2>Prompt output</h2>
+              <span className="field-hint">{prompts.length} {prompts.length > 1 ? "variants" : "variant"} · Suno &amp; Udio ready</span>
             </div>
 
-            <div className="space-y-6">
-              {prompts.map((promptItem, index) => (
-                <article
-                  key={index}
-                  className="prompt-result-card"
-                >
-                  <div className="result-card-header">
-                    <div className="prompt-id-badge">
-                      <span className="prompt-counter">{index + 1}</span>
-                      <span>Prompt {index + 1}</span>
+            {prompts.map((promptItem, index) => (
+              <div key={index} className="result-card">
+                <div className="r-head">
+                  <div className="r-title">
+                    <span className="r-num">{index + 1}</span>Prompt {index + 1}
+                  </div>
+                  <div className="r-actions">
+                    <button className="btn-sm" onClick={() => handleCopy(promptItem, index)}>
+                      {copiedIndex === index ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-500" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          Copy full prompt
+                        </>
+                      )}
+                    </button>
+                    <button className="btn-sm btn-json" onClick={() => handleCopyJson(promptItem, index)}>
+                      {copiedJsonIndex === index ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-500" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Braces className="w-3 h-3" />
+                          Copy JSON
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid3">
+                  <div className="sub-card">
+                    <div className="sub-head">
+                      <span className="sub-tag tag-rhythm">
+                        <Activity className="w-3 h-3" />
+                        Rhythm
+                      </span>
+                      <button className="btn-sub" title="Copy Rhythm" onClick={() => handleCopySection("Rhythm", promptItem.rhythm, `rhythm-${index}`)}>
+                        {copiedSection === `rhythm-${index}` ? (
+                          <Check className="w-3 h-3 text-emerald-500" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </button>
                     </div>
-                    <div className="prompt-actions">
-                        <button className="btn-copy-sm" onClick={() => handleCopy(promptItem, index)}>
-                          {copiedIndex === index ? (
-                            <>
-                              <Check className="w-4 h-4 text-emerald-400" />
-                              Copied All
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-4 h-4" />
-                              Copy Full Prompt
-                            </>
-                          )}
-                        </button>
-                        <button className="btn-copy-sm btn-copy-json" onClick={() => handleCopyJson(promptItem, index)}>
-                          {copiedJsonIndex === index ? (
-                            <>
-                              <Check className="w-4 h-4 text-emerald-400" />
-                              Copied JSON
-                            </>
-                          ) : (
-                            <>
-                              <Braces className="w-4 h-4" />
-                              Copy as JSON
-                            </>
-                          )}
-                        </button>
-                    </div>
+                    <p className="sub-body">
+                      {promptItem.rhythm || "N/A"}
+                    </p>
                   </div>
 
-                  <div className="result-cards-grid">
-                    {/* Rhythm Card */}
-                    <div className="sub-card card-rhythm">
-                      <div>
-                        <div className="sub-card-header">
-                          <span className="sub-tag tag-rhythm">
-                            <Activity className="w-3 h-3" />
-                            Rhythm
-                          </span>
-                          <button className="btn-sub-copy" title="Copy Rhythm" onClick={() => handleCopySection("Rhythm", promptItem.rhythm, `rhythm-${index}`)}>
-                            {copiedSection === `rhythm-${index}` ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                        <p className="sub-card-content">
-                          {promptItem.rhythm || "N/A"}
-                        </p>
-                      </div>
+                  <div className="sub-card">
+                    <div className="sub-head">
+                      <span className="sub-tag tag-style">
+                        <Palette className="w-3 h-3" />
+                        Style
+                      </span>
+                      <button className="btn-sub" title="Copy Style" onClick={() => handleCopySection("Style", promptItem.style, `style-${index}`)}>
+                        {copiedSection === `style-${index}` ? (
+                          <Check className="w-3 h-3 text-emerald-500" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </button>
                     </div>
-
-                    {/* Style Card */}
-                    <div className="sub-card card-style">
-                      <div>
-                        <div className="sub-card-header">
-                          <span className="sub-tag tag-style">
-                            <Palette className="w-3 h-3" />
-                            Style
-                          </span>
-                          <button className="btn-sub-copy" title="Copy Style" onClick={() => handleCopySection("Style", promptItem.style, `style-${index}`)}>
-                            {copiedSection === `style-${index}` ? (
-                              <Check className="w-3.5 h-3.5 text-sky-400" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                        <p className="sub-card-content">
-                          {promptItem.style || "N/A"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Details Card */}
-                    <div className="sub-card card-details">
-                      <div>
-                        <div className="sub-card-header">
-                          <span className="sub-tag tag-details">
-                            <Sliders className="w-3 h-3" />
-                            Details
-                          </span>
-                          <button className="btn-sub-copy" title="Copy Details" onClick={() => handleCopySection("Details", promptItem.details, `details-${index}`)}>
-                            {copiedSection === `details-${index}` ? (
-                              <Check className="w-3.5 h-3.5 text-violet-400" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                        <p className="sub-card-content">
-                          {promptItem.details || "N/A"}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="sub-body">
+                      {promptItem.style || "N/A"}
+                    </p>
                   </div>
-                </article>
-              ))}
-            </div>
+
+                  <div className="sub-card">
+                    <div className="sub-head">
+                      <span className="sub-tag tag-details">
+                        <Sliders className="w-3 h-3" />
+                        Details
+                      </span>
+                      <button className="btn-sub" title="Copy Details" onClick={() => handleCopySection("Details", promptItem.details, `details-${index}`)}>
+                        {copiedSection === `details-${index}` ? (
+                          <Check className="w-3 h-3 text-emerald-500" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </button>
+                    </div>
+                    <p className="sub-body">
+                      {promptItem.details || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>
@@ -1463,7 +1421,7 @@ export default function Home() {
       {/* SEO content section — what the site does and how it works */}
       <section
         aria-labelledby="about-heading"
-        className="max-w-6xl mx-auto px-4 py-10 border-t-2 border-border"
+        className="wrap py-10 border-t border-border"
       >
         <h2 id="about-heading" className="text-xl font-bold tracking-tight text-foreground">
           Structured AI Music Prompts for Suno and Udio
@@ -1540,8 +1498,8 @@ export default function Home() {
         </p>
       </section>
 
-      <footer className="border-t-2 border-border bg-card/95 backdrop-blur-md mt-auto py-6">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-muted-foreground">
+      <footer className="border-t border-border bg-background mt-auto">
+        <div className="wrap f-in">
           {/* Company Branding & Credits */}
           <div className="flex items-center gap-3">
             <a
@@ -1563,7 +1521,7 @@ export default function Home() {
                 href="https://www.viaweb.pro"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-sky-500 hover:underline"
+                className="font-bold text-primary hover:underline"
               >
                 ViaWeb
               </a>
@@ -1575,11 +1533,11 @@ export default function Home() {
             <span suppressHydrationWarning>© {new Date().getFullYear()} ViaWeb. All rights reserved.</span>
 
             <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground">
-              <Link href="/privacy" className="hover:text-sky-500 transition-colors">
+              <Link href="/privacy" className="hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
               <span>•</span>
-              <Link href="/terms" className="hover:text-sky-500 transition-colors">
+              <Link href="/terms" className="hover:text-primary transition-colors">
                 Terms of Service
               </Link>
             </div>
@@ -1602,7 +1560,7 @@ export default function Home() {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="font-medium">Engine Compatibility:</span>
             {["Suno v3.5/v4", "Udio v1.5", "Music Flow", "Mureka"].map((p) => (
-              <span key={p} className="platform-pill">
+              <span key={p} className="chip">
                 {p}
               </span>
             ))}

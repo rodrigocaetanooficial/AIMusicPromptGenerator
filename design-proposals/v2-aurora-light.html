@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Prompt Studio — Aurora Light (proposta v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf9f7; --surface:#ffffff; --surface-2:#f5f3f0; --border:#e8e4de; --border-strong:#d9d3ca;
+    --ink:#1a1712; --muted:#6f6a61; --faint:#a29b90;
+    --violet:#7c5cff; --pink:#f472b6; --orange:#fb923c; --teal:#2dd4bf;
+    --shadow:0 1px 2px rgba(26,23,18,.04), 0 12px 32px -16px rgba(26,23,18,.14);
+    --shadow-lg:0 2px 4px rgba(26,23,18,.04), 0 32px 64px -28px rgba(26,23,18,.22);
+    --radius:18px; --radius-sm:12px;
+    --font-d:'Sora',sans-serif; --font-b:'Inter',sans-serif; --font-m:'JetBrains Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* aurora ambience */
+  .ambience{position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(700px 380px at 12% -5%, rgba(124,92,255,.14), transparent 60%),
+      radial-gradient(640px 360px at 88% 0%, rgba(244,114,182,.12), transparent 60%),
+      radial-gradient(760px 420px at 50% 110%, rgba(45,212,191,.10), transparent 60%),
+      var(--bg)}
+
+  /* header */
+  header{position:sticky;top:0;z-index:50;background:rgba(250,249,247,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+  .h-in{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .logo{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--violet),var(--pink));box-shadow:0 6px 16px -6px rgba(124,92,255,.5)}
+  .logo svg{width:18px;height:18px}
+  .brand h1{font-family:var(--font-d);font-size:16px;font-weight:700;letter-spacing:-.02em}
+  .brand p{font-size:11.5px;color:var(--muted)}
+  .h-actions{display:flex;align-items:center;gap:8px}
+  .btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:11px;border:1px solid var(--border);background:var(--surface);
+    color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s;box-shadow:var(--shadow);font-family:var(--font-b)}
+  .btn:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+  .btn svg{width:15px;height:15px;color:var(--violet)}
+  .btn-primary{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn-primary:hover{background:#2c2822;color:#fff}
+  .btn-primary svg{color:#fff}
+
+  /* hero */
+  .hero{text-align:center;padding:84px 0 40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--violet);background:#f0ebff;border:1px solid #e0d7ff;padding:6px 14px;border-radius:999px;margin-bottom:22px}
+  .hero h1{font-family:var(--font-d);font-size:clamp(36px,5.6vw,60px);font-weight:800;letter-spacing:-.04em;line-height:1.06;margin-bottom:18px}
+  .hero h1 em{font-style:normal;background:linear-gradient(100deg,var(--violet),var(--pink) 55%,var(--orange));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{max-width:580px;margin:0 auto;color:var(--muted);font-size:17px}
+  .chips-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:26px}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:8px 15px;border-radius:999px;box-shadow:var(--shadow)}
+  .chip svg{width:14px;height:14px;color:var(--violet)}
+
+  /* studio */
+  .studio{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow-lg);margin-bottom:56px}
+  .label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .field-label{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:8px}
+  .field-label svg{width:15px;height:15px;color:var(--violet)}
+  .field-hint{font-family:var(--font-m);font-size:12px;color:var(--faint)}
+  textarea{width:100%;min-height:116px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:15px 17px;
+    color:var(--ink);font-family:var(--font-b);font-size:15.5px;line-height:1.6;resize:vertical;transition:.15s}
+  textarea::placeholder{color:var(--faint)}
+  textarea:focus{outline:none;background:#fff;border-color:var(--violet);box-shadow:0 0 0 4px rgba(124,92,255,.12)}
+  .presets-label{display:flex;align-items:center;gap:6px;margin-top:14px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+  .preset{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);
+    color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:var(--font-b)}
+  .preset:hover{border-color:var(--violet);color:var(--violet);background:#f7f4ff}
+  .preset svg{width:13px;height:13px;color:var(--violet)}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px;padding-top:20px;border-top:1px solid var(--border)}
+  .control-box{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}
+  .control-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .control-title{font-size:13.5px;font-weight:600;color:var(--muted)}
+  .control-val{font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--violet);background:#f0ebff;padding:2px 10px;border-radius:8px}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--violet) 60%,var(--border) 60%);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2.5px solid var(--violet);box-shadow:0 2px 8px rgba(124,92,255,.35);cursor:pointer}
+  .selects{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  .select-wrap{position:relative}
+  .custom-select{width:100%;height:44px;appearance:none;-webkit-appearance:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:0 38px 0 14px;color:var(--ink);font-size:14px;font-weight:500;outline:none;cursor:pointer;transition:.15s;font-family:var(--font-b)}
+  .custom-select:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(124,92,255,.12);background:#fff}
+  .custom-select option{background:#fff;color:var(--ink)}
+  .chev{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--faint);width:15px;height:15px}
+  .gen-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;flex-wrap:wrap}
+  .hint{font-size:12.5px;color:var(--faint)}
+  .btn-gen{display:inline-flex;align-items:center;gap:9px;height:50px;padding:0 28px;border:none;border-radius:13px;cursor:pointer;font-family:var(--font-d);
+    font-size:15.5px;font-weight:700;color:#fff;background:linear-gradient(120deg,var(--violet),var(--pink));box-shadow:0 12px 28px -10px rgba(124,92,255,.55);transition:.18s}
+  .btn-gen:hover{transform:translateY(-2px);box-shadow:0 16px 36px -10px rgba(124,92,255,.65)}
+  .btn-gen svg{width:18px;height:18px}
+
+  /* results */
+  .results-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+  .results-head h2{font-family:var(--font-d);font-size:21px;font-weight:700;letter-spacing:-.02em}
+  .result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px}
+  .r-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .r-title{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-weight:700;font-size:14.5px}
+  .r-num{width:26px;height:26px;border-radius:9px;background:linear-gradient(135deg,var(--violet),var(--pink));color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+  .r-actions{display:flex;gap:8px}
+  .btn-sm{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;border:1px solid var(--border);background:var(--surface);
+    color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;box-shadow:var(--shadow);font-family:var(--font-b)}
+  .btn-sm:hover{color:var(--violet);border-color:#d8ccff}
+  .btn-sm svg{width:13px;height:13px}
+  .btn-json{background:#f7f4ff;border-color:#e0d7ff;color:var(--violet)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:18px}
+  .sub-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:15px}
+  .sub-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .sub-tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:999px}
+  .sub-tag svg{width:12px;height:12px}
+  .tag-rhythm{color:#059669;background:#e7f8f1}
+  .tag-style{color:var(--violet);background:#f0ebff}
+  .tag-details{color:#c026d3;background:#fae8ff}
+  .btn-sub{background:transparent;border:none;color:var(--faint);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center}
+  .btn-sub:hover{color:var(--violet);background:#f0ebff}
+  .btn-sub svg{width:13px;height:13px}
+  .sub-body{font-family:var(--font-m);font-size:12.5px;line-height:1.75;color:var(--muted)}
+  .sub-body b{color:var(--ink);font-weight:500}
+
+  /* footer */
+  footer{border-top:1px solid var(--border);padding:32px 0;color:var(--faint);font-size:13px}
+  .f-in{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .f-in nav{display:flex;gap:20px}
+  .f-in nav a:hover{color:var(--violet)}
+
+  @media(max-width:760px){.controls,.selects,.grid3{grid-template-columns:1fr}.hero{padding:60px 0 30px}}
+</style>
+</head>
+<body>
+<div class="ambience"></div>
+
+<header>
+  <div class="wrap h-in">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+      <div>
+        <h1>Music Prompt Studio</h1>
+        <p>Ideas in, studio-ready prompts out</p>
+      </div>
+    </div>
+    <div class="h-actions">
+      <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>Dark</button>
+      <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Settings</button>
+      <button class="btn btn-primary">Sign in</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      AI Music Prompt Studio
+    </div>
+    <h1>Your next track starts with a <em>great prompt</em>.</h1>
+    <p>One line of inspiration becomes a precise, production-ready prompt — rhythm, style and technical detail — for every AI music platform.</p>
+    <div class="chips-row">
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Suno</span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Udio</span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music Flow</span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Mureka</span>
+    </div>
+  </section>
+
+  <section class="studio">
+    <div class="label-row">
+      <label class="field-label" for="idea">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Musical idea
+      </label>
+      <span class="field-hint">Ctrl + Enter to generate</span>
+    </div>
+    <textarea id="idea" placeholder="e.g. a warm lo-fi beat with dusty vinyl, Rhodes piano and a rainy-night mood…"></textarea>
+
+    <div class="presets-label">Try an example</div>
+    <div class="presets">
+      <button class="preset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>80s Synthwave</button>
+      <button class="preset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>Lo-Fi Chill</button>
+      <button class="preset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Epic Orchestral</button>
+      <button class="preset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>Dark Techno</button>
+    </div>
+
+    <div class="controls">
+      <div class="control-box">
+        <div class="control-head">
+          <span class="control-title">Number of prompts</span>
+          <span class="control-val">3</span>
+        </div>
+        <input type="range" min="1" max="5" step="1" value="3">
+      </div>
+      <div class="control-box">
+        <div class="control-head">
+          <span class="control-title">Creativity</span>
+          <span class="control-val">0.80</span>
+        </div>
+        <input type="range" min="0.1" max="1" step="0.05" value="0.8">
+      </div>
+    </div>
+
+    <div class="selects">
+      <div class="select-wrap">
+        <select class="custom-select">
+          <option>Google Gemini</option>
+          <option>OpenRouter</option>
+          <option>Groq</option>
+          <option>DeepSeek</option>
+        </select>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="select-wrap">
+        <select class="custom-select">
+          <option>gemini-3.7-flash</option>
+          <option>gpt-oss-120b</option>
+          <option>deepseek-v4-pro</option>
+          <option>glm-5.2</option>
+        </select>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+
+    <div class="gen-row">
+      <span class="hint">Works with Suno · Udio · Music Flow · Mureka</span>
+      <button class="btn-gen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        Generate prompts
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <div class="results-head">
+      <h2>Prompt output</h2>
+      <span class="field-hint">3 variants · Suno &amp; Udio ready</span>
+    </div>
+    <div class="result-card">
+      <div class="r-head">
+        <div class="r-title"><span class="r-num">1</span>Prompt 1</div>
+        <div class="r-actions">
+          <button class="btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy full prompt</button>
+          <button class="btn-sm btn-json"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg>Copy JSON</button>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="sub-card">
+          <div class="sub-head">
+            <span class="sub-tag tag-rhythm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>Rhythm</span>
+            <button class="btn-sub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </div>
+          <p class="sub-body"><b>82 BPM · 4/4</b><br>boom-bap swing, vinyl crackle, off-beat hats</p>
+        </div>
+        <div class="sub-card">
+          <div class="sub-head">
+            <span class="sub-tag tag-style"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>Style</span>
+            <button class="btn-sub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </div>
+          <p class="sub-body"><b>Lo-fi Hip Hop</b><br>Rhodes piano, dusty drums, rainy-night mood</p>
+        </div>
+        <div class="sub-card">
+          <div class="sub-head">
+            <span class="sub-tag tag-details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>Details</span>
+            <button class="btn-sub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          </div>
+          <p class="sub-body"><b>F major · mono-compatible</b><br>low-pass warmth, tape noise floor, soft sidechain</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap f-in">
+    <span>© 2026 Music Prompt Studio</span>
+    <nav>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
