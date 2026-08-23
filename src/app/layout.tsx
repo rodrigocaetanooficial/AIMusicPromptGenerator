@@ -22,7 +22,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Music Prompt Generator - AI-Powered Music Creation Prompts",
+  title: "AI Music Prompt Studio - AI-Powered Music Creation Prompts",
   description: "Create detailed music prompts for AI music generators like Suno, Udio, Google Music Flow, Mureka, and Happy Shrimp. Transform simple ideas into rich, detailed prompts.",
   keywords: ["Music AI", "Suno", "Udio", "Google Music Flow", "Mureka", "Happy Shrimp", "Prompt Generator", "AI Music", "Music Creation", "ViaWeb"],
   authors: [{ name: "ViaWeb", url: "https://www.viaweb.pro" }],

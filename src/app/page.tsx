@@ -3,6 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -101,6 +102,7 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [groupedModelOpen, setGroupedModelOpen] = useState(false);
+  const [providerOpen, setProviderOpen] = useState(false);
   const [groupedModelQuery, setGroupedModelQuery] = useState("");
   const [loadingProviderId, setLoadingProviderId] = useState<string | null>(null);
   const [providerSearch, setProviderSearch] = useState("");
@@ -482,7 +484,7 @@ export default function Home() {
               <Music className="w-[18px] h-[18px]" />
             </div>
             <div>
-              <h1 className="font-display text-base font-bold tracking-tight">Music Prompt Studio</h1>
+              <h1 className="font-display text-base font-bold tracking-tight">AI Music Prompt Studio</h1>
               <p>Ideas in, studio-ready prompts out</p>
             </div>
           </div>
@@ -1088,29 +1090,76 @@ export default function Home() {
           {/* Provider & Model */}
           <div className="selects">
             <div className="select-wrap">
-              <select
-                id="provider-select"
-                className="custom-select"
-                aria-label="AI Provider"
-                value={provider}
-                onChange={(e) => {
-                  const pid = e.target.value;
-                  setProvider(pid);
-                  const key = getActiveProviderKey(pid);
-                  if (key) setApiKey(key);
-                  toast({
-                    title: "Provider Switched",
-                    description: providers.find((p) => p.id === pid)?.name || pid,
-                  });
-                }}
-              >
-                {providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <Popover open={providerOpen} onOpenChange={setProviderOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    role="combobox"
+                    aria-expanded={providerOpen}
+                    aria-label="AI Provider"
+                    className="custom-select flex items-center justify-between pr-3.5"
+                  >
+                    <span className="truncate">{providers.find((p) => p.id === provider)?.name || provider}</span>
+                    <ChevronsUpDown className="w-4 h-4 shrink-0 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border border-border shadow-2xl rounded-2xl"
+                  align="start"
+                >
+                  <Command shouldFilter={false} className="bg-card text-card-foreground">
+                    <CommandInput
+                      placeholder="Search providers..."
+                      value={providerSearch}
+                      onValueChange={setProviderSearch}
+                      className="h-11"
+                    />
+                    <CommandList>
+                      <CommandGroup heading="AI Providers">
+                        {providers
+                          .filter((p) =>
+                            p.name.toLowerCase().includes(providerSearch.toLowerCase())
+                          )
+                          .map((p) => {
+                            const isSelected = p.id === provider;
+                            return (
+                              <CommandItem
+                                key={p.id}
+                                value={p.id}
+                                onSelect={() => {
+                                  setProvider(p.id);
+                                  const key = getActiveProviderKey(p.id);
+                                  if (key) setApiKey(key);
+                                  toast({
+                                    title: "Provider Switched",
+                                    description: p.name,
+                                  });
+                                  setProviderOpen(false);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2 min-w-0 w-full">
+                                  <Check
+                                    className={`h-4 w-4 text-primary shrink-0 ${isSelected ? "opacity-100" : "opacity-0"}`}
+                                  />
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="font-bold text-sm truncate text-foreground">{p.name}</span>
+                                    <span className="text-[11px] text-muted-foreground font-mono truncate">{p.id}</span>
+                                  </div>
+                                  {isSelected && (
+                                    <Badge variant="outline" className="ml-auto text-xs font-bold text-primary border-primary/40 shrink-0">
+                                      Active
+                                    </Badge>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="select-wrap">
               {!model || groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0) === 0 ? (
@@ -1126,17 +1175,16 @@ export default function Home() {
               ) : (
                 <Popover open={groupedModelOpen} onOpenChange={setGroupedModelOpen}>
                   <PopoverTrigger asChild>
-                    <Button
+                    <button
                       type="button"
-                      variant="outline"
                       role="combobox"
                       aria-expanded={groupedModelOpen}
                       aria-label="AI Model"
-                      className="custom-select flex items-center justify-between font-normal"
+                      className="custom-select flex items-center justify-between pr-3.5"
                     >
                       <span className="truncate">{model}</span>
                       <ChevronsUpDown className="w-4 h-4 shrink-0 opacity-60" />
-                    </Button>
+                    </button>
                   </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
                   <Command shouldFilter={false} className="bg-card text-card-foreground">
@@ -1271,6 +1319,7 @@ export default function Home() {
                 value={promptCount}
                 onChange={(e) => setPromptCount(Number(e.target.value))}
                 aria-label="Number of prompts"
+                style={{ "--fill": `${((promptCount - 1) / 9) * 100}%` } as CSSProperties}
               />
             </div>
 
@@ -1287,6 +1336,7 @@ export default function Home() {
                 value={temperature}
                 onChange={(e) => setTemperature(Number(e.target.value))}
                 aria-label="Creativity"
+                style={{ "--fill": `${((temperature - 0.1) / 1.4) * 100}%` } as CSSProperties}
               />
             </div>
           </div>
@@ -1426,7 +1476,7 @@ export default function Home() {
           Structured AI Music Prompts for Suno and Udio
         </h2>
         <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-          Music Prompt Generator turns rough song concepts into precise, production-ready AI music prompts.
+          AI Music Prompt Studio turns rough song concepts into precise, production-ready AI music prompts.
           Whether you are building an energetic synthwave track, a low-fidelity hip-hop beat, or an orchestral
           score, broad descriptions often lead to inconsistent audio generations. This free tool structures your
           input into clear musical directives so text-to-audio engines understand the exact tempo, instrumentation,
