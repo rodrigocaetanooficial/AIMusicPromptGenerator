@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
+  ShieldCheck,
   Cpu,
   LogOut,
   UserPlus,
@@ -531,6 +532,16 @@ export default function Home() {
                     Configure API keys for multiple providers, activate providers, and toggle individual models ON/OFF.
                   </DialogDescription>
                 </DialogHeader>
+
+                {/* API key encryption notice */}
+                <div className="flex items-start gap-3 p-3.5 rounded-xl border border-primary/30 bg-primary/10">
+                  <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                    <strong className="text-foreground">API keys are stored encrypted.</strong>{" "}
+                    Keys are encrypted with AES-256-GCM before being saved on the server and are never
+                    stored or displayed in plain text.
+                  </p>
+                </div>
 
                 <div className="space-y-6 pt-2">
                   {/* Theme Switcher in Settings */}
