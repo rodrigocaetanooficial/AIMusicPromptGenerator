@@ -269,7 +269,7 @@
   .btn-sub{background:transparent;border:none;color:var(--faint);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;min-width:32px;min-height:32px;justify-content:center}
   .btn-sub:hover{color:var(--primary);background:#f0ebff}
   .btn-sub svg{width:13px;height:13px}
-  .sub-
+  .sub-card{background:var(--secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:15px}
   .sub-body b{color:var(--foreground);font-weight:500}
 
   /* footer */
@@ -277,9 +277,9 @@
   .f-in{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
   .f-in nav{display:flex;gap:20px}
   .f-in nav a:hover{color:var(--primary)}
-
-.hero{padding:60px 0 30px}}
 }
+
+@media(max-width:760px){.controls,.selects,.grid3{grid-template-columns:1fr}.hero{padding:60px 0 30px}}
 
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -288,7 +288,6 @@
     scroll-behavior: auto !important;
   }
 }
-@media(max-width:760px){.controls,.selects,.grid3{grid-template-columns:1fr}
 
 .dark .preset { background: var(--secondary); border-color: var(--border); color: var(--muted-foreground); }
 .dark .preset:hover { border-color: var(--primary); color: var(--primary); background: rgba(144, 118, 255, 0.12); }
