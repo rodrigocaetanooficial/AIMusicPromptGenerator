@@ -27,7 +27,8 @@ import {
   LogIn,
   CheckCircle2,
   AlertCircle,
-  X
+  X,
+  Braces
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -90,6 +91,7 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [prompts, setPrompts] = useState<GeneratedPrompt[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedJsonIndex, setCopiedJsonIndex] = useState<number | null>(null);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -426,6 +428,25 @@ export default function Home() {
       description: `Full Prompt ${index + 1} copied to clipboard`,
     });
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleCopyJson = async (promptItem: GeneratedPrompt, index: number) => {
+    const json = JSON.stringify(
+      {
+        rhythm: promptItem.rhythm,
+        style: promptItem.style,
+        details: promptItem.details,
+      },
+      null,
+      2
+    );
+    await navigator.clipboard.writeText(json);
+    setCopiedJsonIndex(index);
+    toast({
+      title: "Copied JSON!",
+      description: `Prompt ${index + 1} copied as JSON`,
+    });
+    setTimeout(() => setCopiedJsonIndex(null), 2000);
   };
 
   const handleCopySection = async (title: string, content: string, key: string) => {
@@ -832,6 +853,54 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Save-settings notice for logged-out users (dismissible) */}
+      {sessionStatus === "unauthenticated" && !noticeDismissed && (
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border-2 border-sky-500/40 bg-sky-500/10 dark:bg-sky-950/40 shadow-sm">
+            <div className="flex items-start sm:items-center gap-3">
+              <UserPlus className="w-5 h-5 text-sky-500 shrink-0 mt-0.5 sm:mt-0" />
+              <p className="text-sm font-semibold text-foreground leading-relaxed">
+                Save your preferred AI models, prompt settings, and custom theme across devices. Create a free account or sign in.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setAuthMode("register");
+                  setAuthOpen(true);
+                }}
+                className="h-8 gap-1.5 font-bold border-2 border-border bg-secondary hover:bg-accent text-foreground rounded-xl shadow-sm"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-sky-500" />
+                Register
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setAuthMode("login");
+                  setAuthOpen(true);
+                }}
+                className="h-8 gap-1.5 font-bold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Sign In
+              </Button>
+              <button
+                type="button"
+                onClick={dismissNotice}
+                aria-label="Dismiss"
+                title="Dismiss"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* User Auth Modal (Sign In / Register / Google OAuth) */}
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
         <DialogContent className="sm:max-w-md bg-card border-2 border-border text-card-foreground p-6 shadow-2xl rounded-2xl">
@@ -1237,24 +1306,44 @@ export default function Home() {
                         </CardTitle>
                       </div>
 
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleCopy(promptItem, index)}
-                        className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border-2 border-border"
-                      >
-                        {copiedIndex === index ? (
-                          <>
-                            <Check className="w-4 h-4 text-emerald-500" />
-                            Copied All
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4" />
-                            Copy All
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleCopy(promptItem, index)}
+                          className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border-2 border-border"
+                        >
+                          {copiedIndex === index ? (
+                            <>
+                              <Check className="w-4 h-4 text-emerald-500" />
+                              Copied All
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-4 h-4" />
+                              Copy All
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleCopyJson(promptItem, index)}
+                          className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border-2 border-border"
+                        >
+                          {copiedJsonIndex === index ? (
+                            <>
+                              <Check className="w-4 h-4 text-emerald-500" />
+                              Copied JSON
+                            </>
+                          ) : (
+                            <>
+                              <Braces className="w-4 h-4" />
+                              Copy JSON
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
 
@@ -1338,54 +1427,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Save-settings notice for logged-out users (dismissible) */}
-      {sessionStatus === "unauthenticated" && !noticeDismissed && (
-        <div className="max-w-6xl mx-auto px-4 pt-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border-2 border-sky-500/40 bg-sky-500/10 dark:bg-sky-950/40 shadow-sm">
-            <div className="flex items-start sm:items-center gap-3">
-              <UserPlus className="w-5 h-5 text-sky-500 shrink-0 mt-0.5 sm:mt-0" />
-              <p className="text-sm font-semibold text-foreground leading-relaxed">
-                Save your preferred AI models, prompt settings, and custom theme across devices. Create a free account or sign in.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setAuthMode("register");
-                  setAuthOpen(true);
-                }}
-                className="h-8 gap-1.5 font-bold border-2 border-border bg-secondary hover:bg-accent text-foreground rounded-xl shadow-sm"
-              >
-                <UserPlus className="w-3.5 h-3.5 text-sky-500" />
-                Register
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setAuthMode("login");
-                  setAuthOpen(true);
-                }}
-                className="h-8 gap-1.5 font-bold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                Sign In
-              </Button>
-              <button
-                type="button"
-                onClick={dismissNotice}
-                aria-label="Dismiss"
-                title="Dismiss"
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* SEO content section — what the site does and how it works */}
       <section
         aria-labelledby="about-heading"
@@ -1399,7 +1440,9 @@ export default function Home() {
           Whether you are building an energetic synthwave track, a low-fidelity hip-hop beat, or an orchestral
           score, broad descriptions often lead to inconsistent audio generations. This free tool structures your
           input into clear musical directives so text-to-audio engines understand the exact tempo, instrumentation,
-          and mood you want to produce.
+          and mood you want to produce. The same structured prompts work across the leading AI music platforms —
+          including Suno, Udio, Google Music Flow, Mureka, and Happy Shrimp — so you can generate full tracks
+          wherever you create.
         </p>
 
         <h3 className="mt-8 text-base font-bold text-foreground">
