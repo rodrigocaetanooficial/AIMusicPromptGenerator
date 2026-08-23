@@ -278,7 +278,7 @@
   .f-in nav{display:flex;gap:20px}
   .f-in nav a:hover{color:var(--primary)}
 
-  @media(max-width:760px){.controls,.selects,.grid3{grid-template-columns:1fr}.hero{padding:60px 0 30px}}
+.hero{padding:60px 0 30px}}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -288,3 +288,15 @@
     scroll-behavior: auto !important;
   }
 }
+@media(max-width:760px){.controls,.selects,.grid3{grid-template-columns:1fr}
+
+.dark .preset { background: var(--secondary); border-color: var(--border); color: var(--muted-foreground); }
+.dark .preset:hover { border-color: var(--primary); color: var(--primary); background: rgba(144, 118, 255, 0.12); }
+.dark .eyebrow { background: rgba(144, 118, 255, 0.14); border-color: rgba(144, 118, 255, 0.3); color: var(--primary); }
+.dark .tag-rhythm { color: #34d399; background: rgba(5, 150, 105, 0.16); }
+.dark .tag-style { color: #a78bfa; background: rgba(124, 92, 255, 0.16); }
+.dark .tag-details { color: #e879f9; background: rgba(192, 38, 211, 0.16); }
+.dark .btn-json { background: rgba(144, 118, 255, 0.14); border-color: rgba(144, 118, 255, 0.35); color: #a78bfa; }
+.dark .btn-json:hover { background: rgba(144, 118, 255, 0.22); color: #c4b5fd; }
+.dark .control-val { background: rgba(144, 118, 255, 0.14); color: #a78bfa; }
+.dark .r-num { background: linear-gradient(135deg, #7c5cff, #d946ef); }

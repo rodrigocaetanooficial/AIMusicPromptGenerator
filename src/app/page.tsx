@@ -32,7 +32,6 @@ import {
   Activity,
   Flame,
   Headphones,
-  Mic,
   Palette,
   Radio,
   Sliders,
