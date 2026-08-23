@@ -40,9 +40,7 @@ import {
   Waves,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -479,26 +477,27 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
       {/* Header */}
-      <header className="border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-sky-500/20 border border-sky-500/40 text-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.25)]">
-              <Music className="w-5 h-5" />
+      <header className="sticky-header">
+        <div className="container">
+          <div className="header-inner">
+            <div className="brand">
+              <div className="brand-icon">
+                <Music className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="brand-title">Music Prompt Generator</div>
+                <div className="brand-subtitle">AI Sound &amp; Track Architect</div>
+              </div>
             </div>
-            <div>
-              <h1 className="font-display text-lg font-bold text-foreground tracking-tight">Music Prompt Generator</h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">AI Sound &amp; Track Architect</p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2.5">
+            <div className="header-actions">
             {/* Quick Theme Switcher Button */}
             {mounted && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                className="h-9 px-3 border-2 border-border bg-secondary hover:bg-accent text-foreground font-semibold rounded-xl gap-1.5 shadow-sm"
+                className="btn-icon-label"
                 title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
               >
                 {isDark ? (
@@ -518,7 +517,7 @@ export default function Home() {
             {/* Settings Dialog Trigger */}
             <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 border-2 border-border bg-secondary hover:bg-accent text-foreground text-xs font-bold rounded-xl shadow-sm">
+                <Button variant="outline" size="sm" className="btn-icon-label">
                   <Settings className="w-4 h-4 text-sky-500" />
                   <span className="hidden sm:inline">Settings</span>
                 </Button>
@@ -852,29 +851,27 @@ export default function Home() {
                   setAuthMessage(null);
                   setAuthOpen(true);
                 }}
-                className="gap-1.5 border-2 border-sky-500/50 bg-sky-500/10 text-sky-600 dark:text-sky-300 hover:bg-sky-500 hover:text-white text-xs font-bold rounded-xl shadow-sm"
+                className="btn-icon-label"
               >
-                <LogIn className="w-3.5 h-3.5" />
+                <LogIn className="w-3.5 h-3.5 text-sky-400" />
                 <span>Sign In / Register</span>
               </Button>
             )}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-4 pt-12 pb-2 text-center">
-        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-sky-400 bg-sky-500/10 border border-sky-500/30 mb-5">
+      <section className="hero container">
+        <div className="badge-pill">
           <Sparkles className="w-3.5 h-3.5" />
           Studio Engine v2.4 · Suno &amp; Udio Optimized
-        </span>
-        <h2 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-4 text-foreground">
-          Transform Musical Ideas into{" "}
-          <span className="bg-gradient-to-r from-sky-400 via-blue-500 to-violet-500 bg-clip-text text-transparent">
-            Structured Prompts
-          </span>
-        </h2>
-        <p className="max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground">
+        </div>
+        <h1 className="hero-title">
+          Transform Musical Ideas into <span>Structured Prompts</span>
+        </h1>
+        <p className="hero-subtitle">
           High-fidelity prompts divided into Rhythm, Style, and Technical Details for next-generation
           text-to-music engines.
         </p>
@@ -1068,22 +1065,21 @@ export default function Home() {
       </Dialog>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <main className="container">
         {/* Main Prompter Card */}
-        <Card className="border border-border bg-card shadow-[0_24px_48px_-16px_rgba(0,0,0,0.6)] rounded-[20px] p-6 space-y-6 dark:bg-gradient-to-b dark:from-[#16203a] dark:to-[#121a2c]">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
-                <Music className="w-4 h-4 text-sky-400" />
+        <section className="generator-card">
+          <div className="form-group">
+            <div className="label-row">
+              <label className="field-label" htmlFor="music-idea">
+                <Music className="w-4 h-4" />
                 Your Musical Idea
               </label>
-              <span className="text-xs text-muted-foreground font-mono font-medium">
-                Press Ctrl + Enter to generate
-              </span>
+              <span className="field-hint">Press Ctrl + Enter to generate</span>
             </div>
-            <Textarea
+            <textarea
+              id="music-idea"
+              className="textarea-custom"
               placeholder="e.g. 80s synthwave with analog warm synths, driving drum machine, nocturnal synth-pop mood"
-              className="min-h-[120px] text-base resize-none bg-input border border-border/80 text-foreground focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 placeholder:text-muted-foreground font-sans shadow-[inset_0_2px_6px_rgba(0,0,0,0.45)] rounded-xl"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -1091,53 +1087,49 @@ export default function Home() {
           </div>
 
           {/* Provider & Model */}
-          <div className="pt-2 border-t border-border">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <div className="dropdowns-grid">
               {/* Provider Select */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="provider-select"
-                    className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5"
-                  >
-                    <Cpu className="w-4 h-4 text-sky-400" />
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <div className="label-row">
+                  <label className="field-label" htmlFor="provider-select">
+                    <Cpu className="w-4 h-4" />
                     AI Provider
                   </label>
                 </div>
-                <select
-                  id="provider-select"
-                  className="select-studio"
-                  value={provider}
-                  onChange={(e) => {
-                    const pid = e.target.value;
-                    setProvider(pid);
-                    const key = getActiveProviderKey(pid);
-                    if (key) setApiKey(key);
-                    toast({
-                      title: "Provider Switched",
-                      description: providers.find((p) => p.id === pid)?.name || pid,
-                    });
-                  }}
-                >
-                  {providers.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="select-wrap">
+                  <select
+                    id="provider-select"
+                    className="custom-select"
+                    value={provider}
+                    onChange={(e) => {
+                      const pid = e.target.value;
+                      setProvider(pid);
+                      const key = getActiveProviderKey(pid);
+                      if (key) setApiKey(key);
+                      toast({
+                        title: "Provider Switched",
+                        description: providers.find((p) => p.id === pid)?.name || pid,
+                      });
+                    }}
+                  >
+                    {providers.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                  <svg className="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
               </div>
 
               {/* Model Select */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="model-search"
-                    className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5"
-                  >
-                    <Search className="w-4 h-4 text-sky-400" />
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <div className="label-row">
+                  <label className="field-label" htmlFor="model-search">
+                    <Search className="w-4 h-4" />
                     Model Search
                   </label>
-                  <span className="text-xs text-muted-foreground font-mono font-medium">
+                  <span className="field-hint">
                     {groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0)} models active
                   </span>
                 </div>
@@ -1146,7 +1138,7 @@ export default function Home() {
                     type="button"
                     variant="outline"
                     onClick={() => setSettingsOpen(true)}
-                    className="w-full justify-center gap-2 font-bold bg-sky-500/15 border-2 border-sky-500/60 hover:bg-sky-500 hover:text-white text-sky-600 dark:text-sky-300 h-12 shadow-sm rounded-xl cursor-pointer"
+                    className="w-full justify-center gap-2 font-bold bg-sky-500/15 border border-sky-500/60 hover:bg-sky-500 hover:text-white text-sky-600 dark:text-sky-300 h-12 shadow-sm rounded-xl cursor-pointer"
                   >
                     <Zap className="w-4 h-4 text-sky-500" />
                     <span>Click here to Add or Enable AI Models in Settings</span>
@@ -1159,9 +1151,9 @@ export default function Home() {
                         variant="outline"
                         role="combobox"
                         aria-expanded={groupedModelOpen}
-                        className="w-full justify-between font-normal bg-input border border-border/80 hover:bg-input text-foreground h-11 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.4)] px-3.5"
+                        className="model-search-input"
                       >
-                        <div className="flex items-center gap-2 truncate">
+                        <div className="flex items-center gap-2 truncate w-full">
                           <Search className="w-4 h-4 text-muted-foreground shrink-0" />
                           <span className="truncate font-bold text-foreground text-sm">
                             {model}
@@ -1242,15 +1234,14 @@ export default function Home() {
             )}
             </div>
           </div>
-          </div>
 
           {/* Quick Suggestions */}
           <div className="space-y-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider inline-flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+            <span className="presets-label">
+              <Sparkles className="w-3.5 h-3.5" />
               Try an example prompt
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="presets-wrap">
               {[
                 {
                   label: "80s Synthwave",
@@ -1287,9 +1278,9 @@ export default function Home() {
                   key={idx}
                   type="button"
                   onClick={() => setInput(item.prompt)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border border-border bg-secondary hover:border-sky-400 hover:text-sky-400 text-secondary-foreground transition-all duration-150 shadow-sm"
+                  className="chip-btn"
                 >
-                  <span className="text-sky-400">{item.icon}</span>
+                  {item.icon}
                   {item.label}
                 </button>
               ))}
@@ -1297,15 +1288,11 @@ export default function Home() {
           </div>
 
           {/* Sliders Grid */}
-          <div className="grid gap-6 sm:grid-cols-2 pt-2 border-t border-border">
-            <div className="space-y-3 p-4 rounded-xl border border-border dark:border-white/15 bg-secondary shadow-sm">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-foreground">
-                  Number of Prompts
-                </label>
-                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30">
-                  {promptCount}
-                </span>
+          <div className="controls-grid">
+            <div className="control-box">
+              <div className="control-header">
+                <span className="control-title">Number of Prompts</span>
+                <span id="prompt-count-val" className="control-val-badge">{promptCount}</span>
               </div>
               <Slider
                 value={[promptCount]}
@@ -1313,18 +1300,13 @@ export default function Home() {
                 min={1}
                 max={10}
                 step={1}
-                className="py-2"
               />
             </div>
 
-            <div className="space-y-3 p-4 rounded-xl border border-border dark:border-white/15 bg-secondary shadow-sm">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-foreground">
-                  Creativity (Temperature)
-                </label>
-                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30">
-                  {temperature.toFixed(1)}
-                </span>
+            <div className="control-box">
+              <div className="control-header">
+                <span className="control-title">Creativity (Temperature)</span>
+                <span id="creativity-val" className="control-val-badge">{temperature.toFixed(1)}</span>
               </div>
               <Slider
                 value={[temperature]}
@@ -1332,17 +1314,12 @@ export default function Home() {
                 min={0.1}
                 max={1.5}
                 step={0.1}
-                className="py-2"
               />
             </div>
           </div>
 
           {/* Generate Button */}
-          <Button
-            className="w-full h-14 text-base font-bold font-display bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 hover:from-sky-400 hover:to-violet-500 text-white shadow-xl shadow-sky-500/25 active:scale-[0.99] transition-all rounded-2xl cursor-pointer"
-            onClick={handleGenerate}
-            disabled={isGenerating || input.trim().length < 3 || !selectedProvider}
-          >
+          <button type="button" className="btn-generate" onClick={handleGenerate} disabled={isGenerating || input.trim().length < 3 || !selectedProvider}>
             {isGenerating ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -1354,46 +1331,33 @@ export default function Home() {
                 Generate {promptCount} {promptCount > 1 ? "Prompts" : "Prompt"}
               </>
             )}
-          </Button>
-        </Card>
+          </button>
+        </section>
 
         {/* Results Section */}
         {prompts.length > 0 && (
           <div ref={resultsRef} className="space-y-6 pt-2 scroll-mt-24">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-sky-400" />
+            <div className="section-title-row">
+              <h2 className="section-title">
+                <Sparkles className="w-5 h-5" />
                 Structured Prompt Output
               </h2>
-              <span className="text-xs text-muted-foreground font-mono font-medium">
-                Ready for Suno &amp; Udio
-              </span>
+              <span className="field-hint">Ready for Suno &amp; Udio</span>
             </div>
 
             <div className="space-y-6">
               {prompts.map((promptItem, index) => (
-                <Card
+                <article
                   key={index}
-                  className="relative overflow-hidden border border-border bg-card shadow-xl rounded-[20px]"
+                  className="prompt-result-card"
                 >
-                  <CardHeader className="pb-3 border-b border-border bg-secondary/60 p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/15 text-xs font-bold text-sky-400 border border-sky-500/30">
-                          {index + 1}
-                        </span>
-                        <CardTitle className="font-display text-base font-bold text-foreground">
-                          Prompt {index + 1}
-                        </CardTitle>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleCopy(promptItem, index)}
-                          className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border border-border"
-                        >
+                  <div className="result-card-header">
+                    <div className="prompt-id-badge">
+                      <span className="prompt-counter">{index + 1}</span>
+                      <span>Prompt {index + 1}</span>
+                    </div>
+                    <div className="prompt-actions">
+                        <button className="btn-copy-sm" onClick={() => handleCopy(promptItem, index)}>
                           {copiedIndex === index ? (
                             <>
                               <Check className="w-4 h-4 text-emerald-400" />
@@ -1402,16 +1366,11 @@ export default function Home() {
                           ) : (
                             <>
                               <Copy className="w-4 h-4" />
-                              Copy All
+                              Copy Full Prompt
                             </>
                           )}
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleCopyJson(promptItem, index)}
-                          className="h-8 gap-1.5 font-bold shadow-sm bg-sky-500/10 border-sky-500/40 hover:bg-sky-500 text-sky-400 hover:text-white border"
-                        >
+                        </button>
+                        <button className="btn-copy-sm btn-copy-json" onClick={() => handleCopyJson(promptItem, index)}>
                           {copiedJsonIndex === index ? (
                             <>
                               <Check className="w-4 h-4 text-emerald-400" />
@@ -1420,93 +1379,81 @@ export default function Home() {
                           ) : (
                             <>
                               <Braces className="w-4 h-4" />
-                              Copy JSON
+                              Copy as JSON
                             </>
                           )}
-                        </Button>
-                      </div>
+                        </button>
                     </div>
-                  </CardHeader>
+                  </div>
 
-                  <CardContent className="p-5">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Rhythm Box */}
-                    <div className="p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] space-y-2 shadow-sm flex flex-col justify-between">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30">
-                          <Activity className="w-3 h-3" />
-                          Rhythm
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopySection("Rhythm", promptItem.rhythm, `rhythm-${index}`)}
-                          className="h-7 px-2.5 text-xs text-emerald-400 hover:bg-emerald-500/15 font-bold"
-                        >
-                          {copiedSection === `rhythm-${index}` ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </Button>
+                  <div className="result-cards-grid">
+                    {/* Rhythm Card */}
+                    <div className="sub-card card-rhythm">
+                      <div>
+                        <div className="sub-card-header">
+                          <span className="sub-tag tag-rhythm">
+                            <Activity className="w-3 h-3" />
+                            Rhythm
+                          </span>
+                          <button className="btn-sub-copy" title="Copy Rhythm" onClick={() => handleCopySection("Rhythm", promptItem.rhythm, `rhythm-${index}`)}>
+                            {copiedSection === `rhythm-${index}` ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="sub-card-content">
+                          {promptItem.rhythm || "N/A"}
+                        </p>
                       </div>
-                      <p className="text-sm text-foreground font-semibold leading-relaxed pl-1">
-                        {promptItem.rhythm || "N/A"}
-                      </p>
                     </div>
 
-                    {/* Style Box */}
-                    <div className="p-4 rounded-xl border border-sky-500/25 bg-sky-500/[0.06] space-y-2 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-400 bg-sky-500/15 border border-sky-500/30">
-                          <Palette className="w-3 h-3" />
-                          Style
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopySection("Style", promptItem.style, `style-${index}`)}
-                          className="h-7 px-2.5 text-xs text-sky-400 hover:bg-sky-500/15 font-bold"
-                        >
-                          {copiedSection === `style-${index}` ? (
-                            <Check className="w-3.5 h-3.5 text-sky-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </Button>
+                    {/* Style Card */}
+                    <div className="sub-card card-style">
+                      <div>
+                        <div className="sub-card-header">
+                          <span className="sub-tag tag-style">
+                            <Palette className="w-3 h-3" />
+                            Style
+                          </span>
+                          <button className="btn-sub-copy" title="Copy Style" onClick={() => handleCopySection("Style", promptItem.style, `style-${index}`)}>
+                            {copiedSection === `style-${index}` ? (
+                              <Check className="w-3.5 h-3.5 text-sky-400" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="sub-card-content">
+                          {promptItem.style || "N/A"}
+                        </p>
                       </div>
-                      <p className="text-sm text-foreground font-semibold leading-relaxed pl-1">
-                        {promptItem.style || "N/A"}
-                      </p>
                     </div>
 
-                    {/* Details Box */}
-                    <div className="p-4 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] space-y-2 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-violet-400 bg-violet-500/15 border border-violet-500/30">
-                          <Sliders className="w-3 h-3" />
-                          Details
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopySection("Details", promptItem.details, `details-${index}`)}
-                          className="h-7 px-2.5 text-xs text-violet-400 hover:bg-violet-500/15 font-bold"
-                        >
-                          {copiedSection === `details-${index}` ? (
-                            <Check className="w-3.5 h-3.5 text-violet-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </Button>
+                    {/* Details Card */}
+                    <div className="sub-card card-details">
+                      <div>
+                        <div className="sub-card-header">
+                          <span className="sub-tag tag-details">
+                            <Sliders className="w-3 h-3" />
+                            Details
+                          </span>
+                          <button className="btn-sub-copy" title="Copy Details" onClick={() => handleCopySection("Details", promptItem.details, `details-${index}`)}>
+                            {copiedSection === `details-${index}` ? (
+                              <Check className="w-3.5 h-3.5 text-violet-400" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="sub-card-content">
+                          {promptItem.details || "N/A"}
+                        </p>
                       </div>
-                      <p className="text-sm text-foreground font-semibold leading-relaxed pl-1">
-                        {promptItem.details || "N/A"}
-                      </p>
                     </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </article>
               ))}
             </div>
           </div>
@@ -1655,10 +1602,7 @@ export default function Home() {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="font-medium">Engine Compatibility:</span>
             {["Suno v3.5/v4", "Udio v1.5", "Music Flow", "Mureka"].map((p) => (
-              <span
-                key={p}
-                className="px-2 py-0.5 rounded border border-border bg-card text-muted-foreground"
-              >
+              <span key={p} className="platform-pill">
                 {p}
               </span>
             ))}
