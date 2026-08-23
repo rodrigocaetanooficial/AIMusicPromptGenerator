@@ -1,12 +1,29 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
+import { getClientIP } from "@/lib/client-ip";
 
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
+  },
+  // SECURITY: no hardcoded fallback. NEXTAUTH_SECRET must come from the
+  // environment; a public default would let anyone forge session JWTs.
+  secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
   providers: [
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -100,8 +117,26 @@ export const authOptions: NextAuthOptions = {
     signIn: "/",
     error: "/",
   },
-  secret: process.env.NEXTAUTH_SECRET || "ai-music-secret-key-2026",
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+export { handler as GET };
+
+// Rate limit credentials login (brute-force protection): 5 attempts / IP / 15min.
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ nextauth: string[] }> }
+) {
+  const url = new URL(request.url);
+  if (url.pathname.endsWith("/callback/credentials")) {
+    const rl = rateLimit(`login:${getClientIP(request)}`, 5, 15 * 60 * 1000);
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "Too many sign-in attempts. Please try again later." },
+        { status: 429 }
+      );
+    }
+  }
+  // Must forward the route context — next-auth needs ctx.params.nextauth
+  return handler(request, context);
+}

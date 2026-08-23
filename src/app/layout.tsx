@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
+import { PresenceTracker } from "@/components/presence-tracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +46,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster />
+          <PresenceTracker />
         </Providers>
 
         {/* Google Analytics 4 (GA4) Integration */}

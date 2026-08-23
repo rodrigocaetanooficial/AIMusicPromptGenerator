@@ -1,5 +1,22 @@
 import type { NextConfig } from "next";
 
+// Content-Security-Policy. Kept compatible with: GA4 (gtag), Google OAuth
+// redirect flow, self-hosted fonts and Next.js inline bootstrap scripts.
+const isDev = process.env.NODE_ENV !== "production";
+const cspValue = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  `connect-src 'self' https://www.google-analytics.com https://stats.g.doubleclick.net${isDev ? " ws://localhost:3000 ws://127.0.0.1:3000" : ""}`,
+  "frame-src 'self' https://accounts.google.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://accounts.google.com",
+  "frame-ancestors 'self'",
+].join("; ");
+
 const securityHeaders = [
   {
     key: 'X-DNS-Prefetch-Control',
@@ -24,6 +41,10 @@ const securityHeaders = [
   {
     key: 'Referrer-Policy',
     value: 'origin-when-cross-origin'
+  },
+  {
+    key: 'Content-Security-Policy',
+    value: cspValue
   }
 ];
 

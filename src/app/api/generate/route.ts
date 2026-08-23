@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { providers } from "@/lib/types";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
+import { getClientIP } from "@/lib/client-ip";
 
 const generationSchema = z.object({
   input: z.string().min(3, "Input must be at least 3 characters").max(2000, "Input is too long"),
   count: z.number().int().min(1).max(10),
   temperature: z.number().min(0).max(2),
   provider: z.string().min(1),
-  apiKey: z.string().optional(),
+  apiKey: z.string().min(1),
   model: z.string().min(1),
 });
 
@@ -187,6 +192,7 @@ async function generateWithOpenAICompatible(
 
   if (!response.ok) {
     const errorText = await response.text();
+    let errorMessage = errorText;
     console.error(`Provider API error (${provider} - ${model} - ${response.status}):`, errorText);
     try {
       const parsed = JSON.parse(errorText);
@@ -227,6 +233,21 @@ async function generateWithOpenAICompatible(
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    // Throttle generation: 10 / IP / min (each call burns the user's own API key,
+    // but PromptLog writes would otherwise be unbounded)
+    const rl = rateLimit(`gen:${getClientIP(request)}`, 10, 60 * 1000);
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          prompts: [],
+          error: "Too many requests. Please wait a moment and try again.",
+        },
+        { status: 429 }
+      );
+    }
+
     const rawBody = await request.json();
     const result = generationSchema.safeParse(rawBody);
 
@@ -250,6 +271,18 @@ export async function POST(request: NextRequest) {
     
     // Use external provider with API key
     prompts = await generateWithOpenAICompatible(input, count, temperature, provider, apiKey, model);
+
+    // Log prompt generation — awaited so the audit trail is never dropped,
+    // but failure-safe: a logging error must never fail the generation.
+    await prisma.promptLog
+      .create({
+        data: {
+          userId: (session?.user as { id?: string } | undefined)?.id ?? null,
+          provider,
+          model,
+        },
+      })
+      .catch(() => {});
 
     // Ensure we have the right number of prompts
     while (prompts.length < count) {

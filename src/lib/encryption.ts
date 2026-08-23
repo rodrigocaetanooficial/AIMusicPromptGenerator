@@ -1,9 +1,19 @@
 import crypto from "crypto";
 
-const SECRET = process.env.ENCRYPTION_SECRET || process.env.NEXTAUTH_SECRET || "ai-music-prompt-generator-default-secret-key-32bytes!";
-
-// Derive a 32-byte key from the secret
-const KEY = crypto.createHash("sha256").update(SECRET).digest();
+// SECURITY: no hardcoded fallback secret. A public default would let anyone
+// decrypt stored provider API keys. ENCRYPTION_SECRET is required (falls back
+// to NEXTAUTH_SECRET only when both are env-provided, never to a literal).
+function getKey(): Buffer {
+  const secret =
+    process.env.ENCRYPTION_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error(
+      "ENCRYPTION_SECRET (or NEXTAUTH_SECRET) must be set — refusing to derive an encryption key from a default."
+    );
+  }
+  // Derive a 32-byte key from the secret
+  return crypto.createHash("sha256").update(secret).digest();
+}
 
 /**
  * Encrypts plain text using AES-256-GCM.
@@ -15,7 +25,7 @@ export function encrypt(text: string): string {
 
   try {
     const iv = crypto.randomBytes(12);
-    const cipher = crypto.createCipheriv("aes-256-gcm", KEY, iv);
+    const cipher = crypto.createCipheriv("aes-256-gcm", getKey(), iv);
     
     let encrypted = cipher.update(text, "utf8", "hex");
     encrypted += cipher.final("hex");
@@ -43,7 +53,7 @@ export function decrypt(text: string): string {
     const tag = Buffer.from(parts[2], "hex");
     const encryptedText = parts[3];
 
-    const decipher = crypto.createDecipheriv("aes-256-gcm", KEY, iv);
+    const decipher = crypto.createDecipheriv("aes-256-gcm", getKey(), iv);
     decipher.setAuthTag(tag);
 
     let decrypted = decipher.update(encryptedText, "hex", "utf8");
