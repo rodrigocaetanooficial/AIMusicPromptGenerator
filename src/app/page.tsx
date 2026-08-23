@@ -26,7 +26,8 @@ import {
   UserPlus,
   LogIn,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -107,6 +108,26 @@ export default function Home() {
   const [authName, setAuthName] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Save-settings notice (logged-out users): dismissed state persists in localStorage
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const timer = window.setTimeout(() => {
+      setNoticeDismissed(localStorage.getItem("mpg-settings-notice-dismissed") === "1");
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const dismissNotice = useCallback(() => {
+    setNoticeDismissed(true);
+    try {
+      localStorage.setItem("mpg-settings-notice-dismissed", "1");
+    } catch {
+      // localStorage unavailable (private mode etc.) — dismiss for this session only
+    }
+  }, []);
 
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -1316,6 +1337,132 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Save-settings notice for logged-out users (dismissible) */}
+      {sessionStatus === "unauthenticated" && !noticeDismissed && (
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border-2 border-sky-500/40 bg-sky-500/10 dark:bg-sky-950/40 shadow-sm">
+            <div className="flex items-start sm:items-center gap-3">
+              <UserPlus className="w-5 h-5 text-sky-500 shrink-0 mt-0.5 sm:mt-0" />
+              <p className="text-sm font-semibold text-foreground leading-relaxed">
+                Save your preferred AI models, prompt settings, and custom theme across devices. Create a free account or sign in.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setAuthMode("register");
+                  setAuthOpen(true);
+                }}
+                className="h-8 gap-1.5 font-bold border-2 border-border bg-secondary hover:bg-accent text-foreground rounded-xl shadow-sm"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-sky-500" />
+                Register
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setAuthMode("login");
+                  setAuthOpen(true);
+                }}
+                className="h-8 gap-1.5 font-bold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Sign In
+              </Button>
+              <button
+                type="button"
+                onClick={dismissNotice}
+                aria-label="Dismiss"
+                title="Dismiss"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SEO content section — what the site does and how it works */}
+      <section
+        aria-labelledby="about-heading"
+        className="max-w-6xl mx-auto px-4 py-10 border-t-2 border-border"
+      >
+        <h2 id="about-heading" className="text-xl font-bold tracking-tight text-foreground">
+          Structured AI Music Prompts for Suno and Udio
+        </h2>
+        <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+          Music Prompt Generator turns rough song concepts into precise, production-ready AI music prompts.
+          Whether you are building an energetic synthwave track, a low-fidelity hip-hop beat, or an orchestral
+          score, broad descriptions often lead to inconsistent audio generations. This free tool structures your
+          input into clear musical directives so text-to-audio engines understand the exact tempo, instrumentation,
+          and mood you want to produce.
+        </p>
+
+        <h3 className="mt-8 text-base font-bold text-foreground">
+          How to Generate Custom Prompts Step by Step
+        </h3>
+        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+          Creating tailored prompts takes only a few seconds:
+        </p>
+        <ol className="mt-2 list-decimal list-inside space-y-1.5 text-sm text-muted-foreground leading-relaxed">
+          <li>
+            <strong className="text-foreground">Enter your core idea:</strong>{" "}
+            Describe the genre, atmosphere, or specific instruments you have in mind.
+          </li>
+          <li>
+            <strong className="text-foreground">Adjust your settings:</strong>{" "}
+            Choose your preferred AI model, select the number of prompt variants you need (from 1 to 10), and set
+            the temperature to control creative variation.
+          </li>
+          <li>
+            <strong className="text-foreground">Copy to your music generator:</strong>{" "}
+            Each generated prompt is formatted into three distinct layers—Rhythm, Style, and Details. Copy any
+            variant directly into Suno or Udio to generate full tracks.
+          </li>
+        </ol>
+        <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+          You can generate prompts anonymously without restrictions. Creating an optional free account lets you
+          save your preferred model, temperature settings, and interface theme across sessions.
+        </p>
+
+        <h3 className="mt-8 text-base font-bold text-foreground">
+          Why Detailed Prompts Matter for Suno and Udio
+        </h3>
+        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+          Generative audio models interpret prompts differently than text or image models. If you only provide a
+          general tag like &quot;rock song,&quot; engines like Suno or Udio must guess critical production factors,
+          including BPM, mixing style, vocal processing, and arrangement dynamics. This often leads to wasted
+          generation credits on unusable audio.
+        </p>
+        <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+          Knowing how to write AI music prompts requires separating tempo and cadence from sonic texture. The Music
+          Prompt Generator organizes every output into three functional sections:
+        </p>
+        <ul className="mt-2 list-disc list-inside space-y-1.5 text-sm text-muted-foreground leading-relaxed">
+          <li>
+            <strong className="text-foreground">Rhythm:</strong>{" "}
+            Defines the BPM, time signature, groove, and percussion choices.
+          </li>
+          <li>
+            <strong className="text-foreground">Style:</strong>{" "}
+            Establishes the core genre, era, production aesthetic, and vocal direction.
+          </li>
+          <li>
+            <strong className="text-foreground">Details:</strong>{" "}
+            Adds specific instrumentation, mixing characteristics, and mood modifiers.
+          </li>
+        </ul>
+        <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+          This structured approach gives you predictable results while leaving enough room for the model to compose
+          natural transitions and engaging melodies. Whether you need reliable Suno prompts for fast prototyping or
+          complex Udio prompts for intricate arrangements, structured formatting gives you direct control over your
+          final tracks.
+        </p>
+      </section>
 
       <footer className="border-t-2 border-border bg-card/95 backdrop-blur-md mt-auto py-6">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-muted-foreground">
