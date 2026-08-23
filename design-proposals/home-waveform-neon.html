@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Prompt Generator — Waveform Neon (proposta)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0f; --surface:rgba(255,255,255,.045); --surface-2:rgba(255,255,255,.08);
+    --border:rgba(255,255,255,.1); --border-strong:rgba(255,255,255,.22);
+    --text:#f4f4f8; --muted:#9d9db2; --faint:#63637a;
+    --pink:#f43f8e; --cyan:#22d3ee; --violet:#8b5cf6;
+    --ok:#34d399;
+    --radius:18px; --radius-sm:11px;
+    --font-d:"Space Grotesk",sans-serif; --font-b:"Inter",sans-serif; --font-m:"JetBrains Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+  ::selection{background:rgba(244,63,142,.35)}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  .ambience{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+    radial-gradient(1000px 600px at 80% -10%, rgba(244,63,142,.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(34,211,238,.1), transparent 60%),
+    radial-gradient(700px 500px at 50% 120%, rgba(139,92,246,.12), transparent 60%),
+    var(--bg)}
+
+  /* ---------- header ---------- */
+  header{position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);background:rgba(10,10,15,.7);border-bottom:1px solid var(--border)}
+  .h-in{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--pink),var(--violet));box-shadow:0 4px 22px -4px rgba(244,63,142,.55)}
+  .brand h1{font-family:var(--font-d);font-size:16.5px;font-weight:700;letter-spacing:-.01em}
+  .brand p{font-size:11.5px;color:var(--muted)}
+  .h-actions{display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:11px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s}
+  .btn:hover{border-color:var(--border-strong);background:var(--surface-2);transform:translateY(-1px)}
+  .btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+  .btn svg{width:16px;height:16px;color:var(--pink)}
+  .btn.theme svg{color:var(--cyan)}
+
+  /* ---------- hero split ---------- */
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:44px;align-items:center;padding:68px 0 44px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);border:1px solid rgba(244,63,142,.35);background:rgba(244,63,142,.09);padding:6px 14px;border-radius:999px;margin-bottom:20px}
+  .hero h2{font-family:var(--font-d);font-size:clamp(32px,4.6vw,52px);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-bottom:16px}
+  .hero h2 em{font-style:normal;background:linear-gradient(100deg,var(--pink),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--muted);font-size:16.5px;max-width:520px}
+  .hero .platforms{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:7px 13px;border-radius:999px}
+  .chip svg{width:13px;height:13px;color:var(--pink)}
+  /* spectrum panel */
+  .spectrum{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:20px;padding:26px 24px;box-shadow:0 30px 90px -30px rgba(244,63,142,.25)}
+  .spectrum::before{content:"";position:absolute;inset:-1px;border-radius:20px;padding:1px;background:linear-gradient(135deg,rgba(244,63,142,.5),rgba(34,211,238,.4),rgba(139,92,246,.5));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .spec-bars{display:flex;align-items:flex-end;justify-content:space-between;gap:5px;height:150px}
+  .spec-bars i{flex:1;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,var(--pink),var(--violet));opacity:.9;animation:spec 1.4s ease-in-out infinite}
+  .spec-bars i:nth-child(odd){background:linear-gradient(180deg,var(--cyan),var(--violet))}
+  .spec-bars i:nth-child(3n){animation-delay:-.5s}.spec-bars i:nth-child(4n){animation-delay:-.9s}.spec-bars i:nth-child(7n){animation-delay:-.3s}
+  @keyframes spec{0%,100%{height:12%}50%{height:96%}}
+  .spec-info{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-family:var(--font-m);font-size:11.5px;color:var(--muted)}
+  .spec-info .rec{display:inline-flex;align-items:center;gap:7px;color:var(--pink);font-weight:600}
+  .spec-info .rec i{width:8px;height:8px;border-radius:50%;background:var(--pink);animation:blink 1.2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- form ---------- */
+  .studio{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;backdrop-filter:blur(8px);margin-bottom:60px}
+  .field-label{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .field-label svg{width:15px;height:15px;color:var(--pink)}
+  textarea{width:100%;min-height:126px;resize:vertical;background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15.5px;line-height:1.6;padding:16px 18px;transition:.18s}
+  textarea::placeholder{color:var(--faint)}
+  textarea:focus{outline:none;border-color:rgba(244,63,142,.55);box-shadow:0 0 0 3px rgba(244,63,142,.14)}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+  .slider-row label{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px}
+  .slider-row label output{font-family:var(--font-m);font-size:12.5px;color:var(--pink);background:rgba(244,63,142,.12);border:1px solid rgba(244,63,142,.3);padding:2px 9px;border-radius:7px}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--pink) var(--fill,60%),rgba(255,255,255,.14) var(--fill,60%));outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--pink);box-shadow:0 2px 12px rgba(244,63,142,.55);cursor:pointer;transition:.15s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pink);cursor:pointer}
+  .selects{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:22px}
+  details.drop{position:relative}
+  details.drop summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 15px;font-size:14px;font-weight:500;cursor:pointer;transition:.18s}
+  details.drop summary:hover{border-color:var(--border-strong)}
+  details.drop summary::-webkit-details-marker{display:none}
+  details.drop summary .chev{transition:.2s;color:var(--faint)}
+  details.drop[open] summary .chev{transform:rotate(180deg)}
+  details.drop[open] summary{border-color:rgba(244,63,142,.55)}
+  .drop-menu{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:30;background:#15151f;border:1px solid var(--border-strong);border-radius:13px;padding:6px;box-shadow:0 24px 60px -14px rgba(0,0,0,.85);max-height:260px;overflow:auto}
+  .drop-menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border-radius:9px;border:none;background:transparent;color:var(--text);font-size:13.5px;cursor:pointer;transition:.12s}
+  .drop-menu button:hover{background:rgba(244,63,142,.14)}
+  .drop-menu button.sel{color:var(--pink);font-weight:600}
+  .drop-menu .search{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:13px;padding:9px 12px;margin-bottom:6px;outline:none}
+  .drop-menu .search:focus{border-color:rgba(244,63,142,.5)}
+  .gen-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:26px;flex-wrap:wrap}
+  .hint{font-size:12.5px;color:var(--faint)}
+  .btn-gen{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 32px;border:none;border-radius:14px;cursor:pointer;font-family:var(--font-d);font-size:16px;font-weight:700;color:#fff;background:linear-gradient(120deg,var(--pink),var(--violet));box-shadow:0 12px 38px -8px rgba(244,63,142,.6);transition:.2s}
+  .btn-gen:hover{transform:translateY(-2px);filter:brightness(1.1);box-shadow:0 16px 48px -8px rgba(244,63,142,.75)}
+  .btn-gen:active{transform:translateY(0)}
+  .btn-gen:focus-visible{outline:2px solid #fff;outline-offset:3px}
+  .btn-gen svg{width:19px;height:19px}
+
+  /* ---------- results ---------- */
+  .results h3{font-family:var(--font-d);font-size:21px;font-weight:700;letter-spacing:-.01em;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+  .results h3 svg{width:20px;height:20px;color:var(--pink)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:64px}
+  .p-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;backdrop-filter:blur(8px);transition:.2s;display:flex;flex-direction:column}
+  .p-card:hover{border-color:var(--border-strong);transform:translateY(-3px);box-shadow:0 20px 50px -20px rgba(244,63,142,.3)}
+  .p-card header{position:static;backdrop-filter:none;background:rgba(255,255,255,.04);border:none;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:15px 17px}
+  .p-card header .t{display:flex;align-items:center;gap:9px;font-family:var(--font-d);font-weight:700;font-size:14.5px}
+  .p-card header .t svg{width:16px;height:16px;color:var(--pink)}
+  .copy{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;cursor:pointer;transition:.15s}
+  .copy:hover{color:var(--pink);border-color:rgba(244,63,142,.4)}
+  .copy.done{color:var(--ok);border-color:rgba(52,211,153,.4)}
+  .copy svg{width:13px;height:13px}
+  .p-body{padding:16px 17px;flex:1;font-family:var(--font-m);font-size:12.5px;line-height:1.75;color:#b9b9cf}
+  .p-body b{color:var(--text);font-weight:500}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--border);padding:30px 0 36px}
+  .f-in{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;color:var(--faint);font-size:13px}
+  .f-in nav{display:flex;gap:20px}
+  .f-in nav a:hover{color:var(--pink)}
+
+  @media(max-width:900px){.hero{grid-template-columns:1fr;gap:30px;padding:48px 0 32px}}
+  @media(max-width:820px){.controls,.selects,.grid3{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){.spec-bars i{animation:none;height:45%}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="ambience"></div>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="wrap h-in">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+      <div>
+        <h1>Music Prompt Generator</h1>
+        <p>Seu prompt de estúdio, em segundos</p>
+      </div>
+    </div>
+    <div class="h-actions">
+      <button class="btn theme" title="Alternar tema" aria-label="Alternar tema claro/escuro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <span>Light</span>
+      </button>
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Settings</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ============ HERO SPLIT ============ -->
+  <section class="hero">
+    <div>
+      <span class="eyebrow">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        AI Music Prompts
+      </span>
+      <h2>Componha o prompt, <em>não a música</em></h2>
+      <p>Transforme uma frase solta em um prompt técnico e criativo — ritmo, estilo e mixagem — pronto para o gerador de música que você usa.</p>
+      <div class="platforms" aria-label="Plataformas compatíveis">
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Suno</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Udio</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music Flow</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Mureka</span>
+      </div>
+    </div>
+    <div class="spectrum" aria-hidden="true">
+      <div class="spec-bars" id="bars">
+        <i style="height:70%"></i><i style="height:35%"></i><i style="height:85%"></i><i style="height:50%"></i><i style="height:92%"></i><i style="height:30%"></i><i style="height:65%"></i><i style="height:78%"></i><i style="height:42%"></i><i style="height:88%"></i><i style="height:55%"></i><i style="height:25%"></i><i style="height:72%"></i><i style="height:60%"></i><i style="height:95%"></i><i style="height:38%"></i><i style="height:80%"></i><i style="height:48%"></i><i style="height:68%"></i><i style="height:33%"></i>
+      </div>
+      <div class="spec-info">
+        <span class="rec"><i></i>REC · gerando ideia…</span>
+        <span>3 camadas · 4 plataformas</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FORM ============ -->
+  <section class="studio" aria-label="Gerar prompt">
+    <div class="field-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      Sua ideia musical
+    </div>
+    <textarea placeholder="Ex.: um techno industrial acelerado com metais distorcidos, kick 909 socado e uma tensão crescendo até o drop…" aria-label="Descreva sua ideia musical"></textarea>
+
+    <div class="controls">
+      <div class="slider-row">
+        <label for="count">Número de prompts <output id="countOut">3</output></label>
+        <input id="count" type="range" min="1" max="5" step="1" value="3">
+      </div>
+      <div class="slider-row">
+        <label for="temp">Criatividade <output id="tempOut">0.8</output></label>
+        <input id="temp" type="range" min="0" max="1" step="0.1" value="0.8">
+      </div>
+    </div>
+
+    <div class="selects">
+      <details class="drop">
+        <summary>
+          <span><span class="field-label" style="display:inline-flex;margin:0">Provider</span>&nbsp;&nbsp;<strong id="provVal">Google Gemini</strong></span>
+          <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="drop-menu">
+          <button class="sel">Google Gemini</button>
+          <button>OpenRouter</button>
+          <button>Groq</button>
+          <button>DeepSeek</button>
+          <button>NVIDIA NIM</button>
+          <button>OpenAI</button>
+        </div>
+      </details>
+      <details class="drop">
+        <summary>
+          <span><span class="field-label" style="display:inline-flex;margin:0">Model</span>&nbsp;&nbsp;<strong id="modelVal">gemini-3.7-flash</strong></span>
+          <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="drop-menu">
+          <input class="search" type="text" placeholder="Buscar modelos…">
+          <button class="sel">gemini-3.7-flash</button>
+          <button>gpt-oss-120b</button>
+          <button>deepseek-v4-pro</button>
+          <button>glm-5.2</button>
+          <button>kimi-k2.6</button>
+        </div>
+      </details>
+    </div>
+
+    <div class="gen-row">
+      <p class="hint">Compatível com <b>Suno</b> · <b>Udio</b> · <b>Music Flow</b> · <b>Mureka</b> · <b>Happy Shrimp</b></p>
+      <button class="btn-gen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M3 12h2M19 12h2M5.2 18.8l1.4-1.4M17.4 6.6l1.4-1.4"/><circle cx="12" cy="12" r="3.2"/></svg>
+        Generate Prompts
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="results" aria-label="Resultados">
+    <h3>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      Prompts gerados
+      <span style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--pink);border:1px solid rgba(244,63,142,.35);background:rgba(244,63,142,.1);padding:3px 10px;border-radius:999px;margin-left:8px">3 variações</span>
+    </h3>
+    <div class="grid3">
+      <article class="p-card">
+        <header>
+          <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6l-3 3v11h12V11l-3-3V2"/><path d="M9 2h6"/><path d="M6 18h12"/></svg>Rhythm</span>
+          <button class="copy" data-copy><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copiar</button>
+        </header>
+        <div class="p-body">
+          <b>BPM 142 · 4/4</b><br>
+          Groove <b>industrial, mecânico</b><br>
+          Kick: <b>909, socado, sidechain</b><br>
+          Percussão: <b>metais e ruído branco</b>
+        </div>
+      </article>
+      <article class="p-card">
+        <header>
+          <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Style</span>
+          <button class="copy" data-copy><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copiar</button>
+        </header>
+        <div class="p-body">
+          <b>Techno Industrial</b> · era atual<br>
+          Clima <b>tenso, distópico</b><br>
+          Sintetizadores: <b>metais, FM distorcido</b><br>
+          Produção <b>agressiva, seca, direta</b>
+        </div>
+      </article>
+      <article class="p-card">
+        <header>
+          <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>Technical Details</span>
+          <button class="copy" data-copy><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copiar</button>
+        </header>
+        <div class="p-body">
+          <b>Kick 909 + synth FM</b><br>
+          Mix: <b>compressor de bus, clipping</b><br>
+          Baixo <b>distorcido, paralelo</b><br>
+          Final: <b>drop com riser e impacto</b>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap f-in">
+    <span>© 2026 ViaWeb · AI Music Prompt Generator</span>
+    <nav>
+      <a href="#">Privacidade</a>
+      <a href="#">Termos</a>
+      <a href="#">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  const fill = (el)=>{const p=(el.value-el.min)/(el.max-el.min)*100;el.style.setProperty('--fill',p+'%')};
+  document.querySelectorAll('input[type=range]').forEach(r=>{fill(r);r.addEventListener('input',()=>{fill(r);document.getElementById(r.id+'Out').textContent=r.step.includes('.')?Number(r.value).toFixed(1):r.value})});
+  document.querySelectorAll('details.drop').forEach(d=>{
+    d.querySelectorAll('.drop-menu button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        d.querySelectorAll('.drop-menu button').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+        const id=d.querySelector('.field-label').textContent.trim()==='Provider'?'provVal':'modelVal';
+        document.getElementById(id).textContent=b.textContent.trim();
+        d.removeAttribute('open');
+      });
+    });
+  });
+  document.querySelectorAll('[data-copy]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      b.classList.add('done');b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Copiado';
+      setTimeout(()=>{b.classList.remove('done');b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copiar';},1600);
+    });
+  });
+</script>
+</body>
+</html>

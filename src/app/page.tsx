@@ -28,7 +28,16 @@ import {
   CheckCircle2,
   AlertCircle,
   X,
-  Braces
+  Braces,
+  Activity,
+  Flame,
+  Headphones,
+  Mic,
+  Palette,
+  Radio,
+  Sliders,
+  Volume2,
+  Waves,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -209,7 +218,7 @@ export default function Home() {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("verified") === "true") {
         toast({
-          title: "Account Email Verified! 🎉",
+          title: "Account Email Verified",
           description: "Your email has been confirmed. You can now sign in.",
         });
         setAuthMode("login");
@@ -473,7 +482,7 @@ export default function Home() {
       <header className="border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-sky-500/20 border border-sky-500/40 text-sky-500 shadow-sm">
+            <div className="p-2 rounded-xl bg-sky-500/20 border border-sky-500/40 text-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.25)]">
               <Music className="w-5 h-5" />
             </div>
             <div>
@@ -798,7 +807,7 @@ export default function Home() {
                         }
                         setSettingsOpen(false);
                         toast({
-                          title: "Settings Saved 🎉",
+                          title: "Settings Saved",
                           description: "Your provider configurations and active models have been saved.",
                         });
                       }}
@@ -852,6 +861,24 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-4 pt-12 pb-2 text-center">
+        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-sky-400 bg-sky-500/10 border border-sky-500/30 mb-5">
+          <Sparkles className="w-3.5 h-3.5" />
+          Studio Engine v2.4 · Suno &amp; Udio Optimized
+        </span>
+        <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-4 text-foreground">
+          Transform Musical Ideas into{" "}
+          <span className="bg-gradient-to-r from-sky-400 via-blue-500 to-violet-500 bg-clip-text text-transparent">
+            Structured Prompts
+          </span>
+        </h2>
+        <p className="max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground">
+          High-fidelity prompts divided into Rhythm, Style, and Technical Details for next-generation
+          text-to-music engines.
+        </p>
+      </section>
 
       {/* Save-settings notice for logged-out users (dismissible) */}
       {sessionStatus === "unauthenticated" && !noticeDismissed && (
@@ -1043,11 +1070,11 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Main Prompter Card */}
-        <Card className="border-2 border-border bg-card shadow-2xl rounded-2xl p-6 space-y-6">
+        <Card className="border border-border bg-card shadow-[0_24px_48px_-16px_rgba(0,0,0,0.6)] rounded-2xl p-6 space-y-6">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-base font-bold text-foreground flex items-center gap-2">
-                <Music className="w-5 h-5 text-sky-500" />
+                <Music className="w-5 h-5 text-sky-400" />
                 Describe your music
               </label>
               <span className="text-xs text-muted-foreground font-mono font-medium">
@@ -1056,7 +1083,7 @@ export default function Home() {
             </div>
             <Textarea
               placeholder="e.g. 80s synthwave with analog warm synths, driving drum machine, nocturnal synth-pop mood"
-              className="min-h-[120px] text-base resize-none bg-input border-2 border-border text-foreground focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 placeholder:text-muted-foreground font-sans shadow-inner rounded-xl"
+              className="min-h-[120px] text-base resize-none bg-input border border-border/80 text-foreground focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 placeholder:text-muted-foreground font-sans shadow-[inset_0_2px_6px_rgba(0,0,0,0.45)] rounded-xl"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -1180,38 +1207,50 @@ export default function Home() {
 
           {/* Quick Suggestions */}
           <div className="space-y-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Quick Suggestions:
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+              Try an example prompt
             </span>
             <div className="flex flex-wrap gap-2">
               {[
                 {
-                  label: "🎹 80s Synthwave",
-                  prompt: "80s synthwave with pulsing analog bass, retro drum machine, and nostalgic synth leads",
+                  label: "80s Synthwave",
+                  icon: <Music className="w-3.5 h-3.5" />,
+                  prompt: "nostalgic 80s synthwave with warm analog Juno-106 pads, a punchy TR-808 drum machine, and a neon-soaked late-night highway mood",
                 },
                 {
-                  label: "🎧 Lo-Fi Chill",
-                  prompt: "chill lo-fi hip hop with vinyl crackle, mellow electric piano, and dusty boom-bap drums",
+                  label: "Lo-Fi Chill",
+                  icon: <Headphones className="w-3.5 h-3.5" />,
+                  prompt: "relaxing lo-fi hip hop with a mellow Fender Rhodes electric piano, vinyl crackle texture and a smooth boom-bap beat",
                 },
                 {
-                  label: "🎻 Epic Orchestral",
-                  prompt: "epic cinematic orchestral trailer music with booming brass, soaring violins, and massive percussion",
+                  label: "Epic Orchestral",
+                  icon: <Volume2 className="w-3.5 h-3.5" />,
+                  prompt: "epic cinematic orchestral score with powerful brass sections, fast strings, deep taiko percussion and a heroic rising finale",
                 },
                 {
-                  label: "🎸 Heavy Metal",
-                  prompt: "aggressive heavy metal with fast double-bass drums, distorted rhythm guitar riffs, and screaming solos",
+                  label: "Dark Techno",
+                  icon: <Flame className="w-3.5 h-3.5" />,
+                  prompt: "dark industrial techno at 142 BPM with distorted metal percussion, a heavy 909 kick, white noise risers and an aggressive drop",
                 },
                 {
-                  label: "🎷 Smooth Jazz",
+                  label: "Smooth Jazz",
+                  icon: <Radio className="w-3.5 h-3.5" />,
                   prompt: "smooth jazz quartet with soulful saxophone solo, walking acoustic bass, and brushed drums",
+                },
+                {
+                  label: "Cinematic Ambient",
+                  icon: <Waves className="w-3.5 h-3.5" />,
+                  prompt: "ambient cinematic soundscape with slow evolving pads, soft piano motifs, airy textures and a vast open atmosphere",
                 },
               ].map((item, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => setInput(item.prompt)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold border-2 border-border bg-secondary hover:bg-sky-500 hover:text-white text-foreground transition-all duration-150 shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border border-border bg-secondary hover:border-sky-400 hover:text-sky-400 text-secondary-foreground transition-all duration-150 shadow-sm"
                 >
+                  <span className="text-sky-400">{item.icon}</span>
                   {item.label}
                 </button>
               ))}
@@ -1219,13 +1258,13 @@ export default function Home() {
           </div>
 
           {/* Sliders Grid */}
-          <div className="grid gap-6 sm:grid-cols-2 pt-2 border-t-2 border-border">
-            <div className="space-y-3 p-4 rounded-xl border-2 border-border bg-secondary/60 shadow-sm">
+          <div className="grid gap-6 sm:grid-cols-2 pt-2 border-t border-border">
+            <div className="space-y-3 p-4 rounded-xl border border-border bg-secondary shadow-sm">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-foreground">
                   Number of Prompts
                 </label>
-                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40">
+                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30">
                   {promptCount}
                 </span>
               </div>
@@ -1239,12 +1278,12 @@ export default function Home() {
               />
             </div>
 
-            <div className="space-y-3 p-4 rounded-xl border-2 border-border bg-secondary/60 shadow-sm">
+            <div className="space-y-3 p-4 rounded-xl border border-border bg-secondary shadow-sm">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-foreground">
                   Creativity (Temperature)
                 </label>
-                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40">
+                <span className="px-2.5 py-0.5 rounded-md text-sm font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30">
                   {temperature.toFixed(1)}
                 </span>
               </div>
@@ -1261,7 +1300,7 @@ export default function Home() {
 
           {/* Generate Button */}
           <Button
-            className="w-full h-13 text-base font-bold bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-xl shadow-sky-500/25 active:scale-[0.99] transition-all rounded-xl cursor-pointer"
+            className="w-full h-14 text-base font-bold bg-gradient-to-r from-sky-500 via-blue-600 to-violet-600 hover:from-sky-400 hover:to-violet-500 text-white shadow-xl shadow-sky-500/25 active:scale-[0.99] transition-all rounded-xl cursor-pointer"
             onClick={handleGenerate}
             disabled={isGenerating || input.trim().length < 3 || !selectedProvider}
           >
@@ -1293,12 +1332,12 @@ export default function Home() {
               {prompts.map((promptItem, index) => (
                 <Card
                   key={index}
-                  className="relative overflow-hidden border-2 border-border bg-card shadow-2xl rounded-2xl"
+                  className="relative overflow-hidden border border-border bg-card shadow-xl rounded-2xl"
                 >
-                  <CardHeader className="pb-3 border-b-2 border-border bg-secondary/50 p-4">
+                  <CardHeader className="pb-3 border-b border-border bg-secondary/60 p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/20 text-xs font-bold text-sky-600 dark:text-sky-300 border border-sky-500/40">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/15 text-xs font-bold text-sky-400 border border-sky-500/30">
                           {index + 1}
                         </span>
                         <CardTitle className="text-base font-bold text-foreground">
@@ -1311,11 +1350,11 @@ export default function Home() {
                           variant="secondary"
                           size="sm"
                           onClick={() => handleCopy(promptItem, index)}
-                          className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border-2 border-border"
+                          className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border border-border"
                         >
                           {copiedIndex === index ? (
                             <>
-                              <Check className="w-4 h-4 text-emerald-500" />
+                              <Check className="w-4 h-4 text-emerald-400" />
                               Copied All
                             </>
                           ) : (
@@ -1329,11 +1368,11 @@ export default function Home() {
                           variant="secondary"
                           size="sm"
                           onClick={() => handleCopyJson(promptItem, index)}
-                          className="h-8 gap-1.5 font-bold shadow-sm bg-secondary hover:bg-sky-600 text-foreground hover:text-white border-2 border-border"
+                          className="h-8 gap-1.5 font-bold shadow-sm bg-sky-500/10 border-sky-500/40 hover:bg-sky-500 text-sky-400 hover:text-white border"
                         >
                           {copiedJsonIndex === index ? (
                             <>
-                              <Check className="w-4 h-4 text-emerald-500" />
+                              <Check className="w-4 h-4 text-emerald-400" />
                               Copied JSON
                             </>
                           ) : (
@@ -1349,19 +1388,20 @@ export default function Home() {
 
                   <CardContent className="space-y-4 pt-4 p-5">
                     {/* Rhythm Box */}
-                    <div className="p-4 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-950/40 space-y-2 shadow-sm">
+                    <div className="p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] space-y-2 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 border border-emerald-500/40">
-                          🥁 Rhythm
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30">
+                          <Activity className="w-3 h-3" />
+                          Rhythm
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopySection("Rhythm", promptItem.rhythm, `rhythm-${index}`)}
-                          className="h-7 px-2.5 text-xs text-emerald-700 dark:text-emerald-200 hover:bg-emerald-500/20 font-bold"
+                          className="h-7 px-2.5 text-xs text-emerald-400 hover:bg-emerald-500/15 font-bold"
                         >
                           {copiedSection === `rhythm-${index}` ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -1373,19 +1413,20 @@ export default function Home() {
                     </div>
 
                     {/* Style Box */}
-                    <div className="p-4 rounded-xl border-2 border-sky-500/40 bg-sky-500/10 dark:bg-sky-950/40 space-y-2 shadow-sm">
+                    <div className="p-4 rounded-xl border border-sky-500/25 bg-sky-500/[0.06] space-y-2 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-700 dark:text-sky-200 border border-sky-500/40">
-                          🎨 Style
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-400 bg-sky-500/15 border border-sky-500/30">
+                          <Palette className="w-3 h-3" />
+                          Style
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopySection("Style", promptItem.style, `style-${index}`)}
-                          className="h-7 px-2.5 text-xs text-sky-700 dark:text-sky-200 hover:bg-sky-500/20 font-bold"
+                          className="h-7 px-2.5 text-xs text-sky-400 hover:bg-sky-500/15 font-bold"
                         >
                           {copiedSection === `style-${index}` ? (
-                            <Check className="w-3.5 h-3.5 text-sky-500" />
+                            <Check className="w-3.5 h-3.5 text-sky-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -1397,19 +1438,20 @@ export default function Home() {
                     </div>
 
                     {/* Details Box */}
-                    <div className="p-4 rounded-xl border-2 border-indigo-500/40 bg-indigo-500/10 dark:bg-indigo-950/40 space-y-2 shadow-sm">
+                    <div className="p-4 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] space-y-2 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 border border-indigo-500/40">
-                          🎛️ Details
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-violet-400 bg-violet-500/15 border border-violet-500/30">
+                          <Sliders className="w-3 h-3" />
+                          Details
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopySection("Details", promptItem.details, `details-${index}`)}
-                          className="h-7 px-2.5 text-xs text-indigo-700 dark:text-indigo-200 hover:bg-indigo-500/20 font-bold"
+                          className="h-7 px-2.5 text-xs text-violet-400 hover:bg-violet-500/15 font-bold"
                         >
                           {copiedSection === `details-${index}` ? (
-                            <Check className="w-3.5 h-3.5 text-indigo-500" />
+                            <Check className="w-3.5 h-3.5 text-violet-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
