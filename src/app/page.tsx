@@ -486,8 +486,8 @@ export default function Home() {
               <Music className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground tracking-tight">Music Prompt Generator</h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">AI-Powered Music Prompts for Suno & Udio</p>
+              <h1 className="font-display text-lg font-bold text-foreground tracking-tight">Music Prompt Generator</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">AI Sound &amp; Track Architect</p>
             </div>
           </div>
 
@@ -868,7 +868,7 @@ export default function Home() {
           <Sparkles className="w-3.5 h-3.5" />
           Studio Engine v2.4 · Suno &amp; Udio Optimized
         </span>
-        <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-4 text-foreground">
+        <h2 className="font-display text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-4 text-foreground">
           Transform Musical Ideas into{" "}
           <span className="bg-gradient-to-r from-sky-400 via-blue-500 to-violet-500 bg-clip-text text-transparent">
             Structured Prompts
@@ -1070,12 +1070,12 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Main Prompter Card */}
-        <Card className="border border-border bg-card shadow-[0_24px_48px_-16px_rgba(0,0,0,0.6)] rounded-2xl p-6 space-y-6">
+        <Card className="border border-border bg-card shadow-[0_24px_48px_-16px_rgba(0,0,0,0.6)] rounded-[20px] p-6 space-y-6 dark:bg-gradient-to-b dark:from-[#16203a] dark:to-[#121a2c]">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-base font-bold text-foreground flex items-center gap-2">
-                <Music className="w-5 h-5 text-sky-400" />
-                Describe your music
+              <label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                <Music className="w-4 h-4 text-sky-400" />
+                Your Musical Idea
               </label>
               <span className="text-xs text-muted-foreground font-mono font-medium">
                 Press Ctrl + Enter to generate
@@ -1090,49 +1090,86 @@ export default function Home() {
             />
           </div>
 
-          {/* AI Model Dropdown */}
-          <div className="space-y-2 pt-2 border-t-2 border-border">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Cpu className="w-4 h-4 text-sky-500" />
-                Select AI Model:
-              </Label>
-              <span className="text-xs text-muted-foreground font-bold">
-                {groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0)} models active
-              </span>
-            </div>
+          {/* Provider & Model */}
+          <div className="pt-2 border-t border-border">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Provider Select */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="provider-select"
+                    className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5"
+                  >
+                    <Cpu className="w-4 h-4 text-sky-400" />
+                    AI Provider
+                  </label>
+                </div>
+                <select
+                  id="provider-select"
+                  className="select-studio"
+                  value={provider}
+                  onChange={(e) => {
+                    const pid = e.target.value;
+                    setProvider(pid);
+                    const key = getActiveProviderKey(pid);
+                    if (key) setApiKey(key);
+                    toast({
+                      title: "Provider Switched",
+                      description: providers.find((p) => p.id === pid)?.name || pid,
+                    });
+                  }}
+                >
+                  {providers.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {!model || groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0) === 0 ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setSettingsOpen(true)}
-                className="w-full justify-center gap-2 font-bold bg-sky-500/15 border-2 border-sky-500/60 hover:bg-sky-500 hover:text-white text-sky-600 dark:text-sky-300 h-12 shadow-sm rounded-xl cursor-pointer"
-              >
-                <Zap className="w-4 h-4 text-sky-500" />
-                <span>Click here to Add or Enable AI Models in Settings</span>
-              </Button>
-            ) : (
-              <Popover open={groupedModelOpen} onOpenChange={setGroupedModelOpen}>
-                <PopoverTrigger asChild>
+              {/* Model Select */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="model-search"
+                    className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5"
+                  >
+                    <Search className="w-4 h-4 text-sky-400" />
+                    Model Search
+                  </label>
+                  <span className="text-xs text-muted-foreground font-mono font-medium">
+                    {groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0)} models active
+                  </span>
+                </div>
+                {!model || groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0) === 0 ? (
                   <Button
                     type="button"
                     variant="outline"
-                    role="combobox"
-                    aria-expanded={groupedModelOpen}
-                    className="w-full justify-between font-normal bg-input border-2 border-border hover:bg-accent text-foreground h-12 shadow-sm rounded-xl"
+                    onClick={() => setSettingsOpen(true)}
+                    className="w-full justify-center gap-2 font-bold bg-sky-500/15 border-2 border-sky-500/60 hover:bg-sky-500 hover:text-white text-sky-600 dark:text-sky-300 h-12 shadow-sm rounded-xl cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 truncate">
-                      <Badge className="bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40 text-xs font-bold">
-                        {selectedProvider?.name || provider}
-                      </Badge>
-                      <span className="truncate font-bold text-foreground text-sm">
-                        {model}
-                      </span>
-                    </div>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-80 text-muted-foreground" />
+                    <Zap className="w-4 h-4 text-sky-500" />
+                    <span>Click here to Add or Enable AI Models in Settings</span>
                   </Button>
-                </PopoverTrigger>
+                ) : (
+                  <Popover open={groupedModelOpen} onOpenChange={setGroupedModelOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={groupedModelOpen}
+                        className="w-full justify-between font-normal bg-input border border-border/80 hover:bg-input text-foreground h-11 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.4)] px-3.5"
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <span className="truncate font-bold text-foreground text-sm">
+                            {model}
+                          </span>
+                        </div>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-80 text-muted-foreground" />
+                      </Button>
+                    </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
                   <Command shouldFilter={false} className="bg-card text-card-foreground">
                     <CommandInput
@@ -1203,6 +1240,8 @@ export default function Home() {
                 </PopoverContent>
               </Popover>
             )}
+            </div>
+          </div>
           </div>
 
           {/* Quick Suggestions */}
@@ -1259,7 +1298,7 @@ export default function Home() {
 
           {/* Sliders Grid */}
           <div className="grid gap-6 sm:grid-cols-2 pt-2 border-t border-border">
-            <div className="space-y-3 p-4 rounded-xl border border-border bg-secondary shadow-sm">
+            <div className="space-y-3 p-4 rounded-xl border border-border dark:border-white/15 bg-secondary shadow-sm">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-foreground">
                   Number of Prompts
@@ -1278,7 +1317,7 @@ export default function Home() {
               />
             </div>
 
-            <div className="space-y-3 p-4 rounded-xl border border-border bg-secondary shadow-sm">
+            <div className="space-y-3 p-4 rounded-xl border border-border dark:border-white/15 bg-secondary shadow-sm">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-foreground">
                   Creativity (Temperature)
@@ -1300,7 +1339,7 @@ export default function Home() {
 
           {/* Generate Button */}
           <Button
-            className="w-full h-14 text-base font-bold bg-gradient-to-r from-sky-500 via-blue-600 to-violet-600 hover:from-sky-400 hover:to-violet-500 text-white shadow-xl shadow-sky-500/25 active:scale-[0.99] transition-all rounded-xl cursor-pointer"
+            className="w-full h-14 text-base font-bold font-display bg-gradient-to-br from-sky-500 via-blue-600 to-violet-600 hover:from-sky-400 hover:to-violet-500 text-white shadow-xl shadow-sky-500/25 active:scale-[0.99] transition-all rounded-2xl cursor-pointer"
             onClick={handleGenerate}
             disabled={isGenerating || input.trim().length < 3 || !selectedProvider}
           >
@@ -1322,17 +1361,20 @@ export default function Home() {
         {prompts.length > 0 && (
           <div ref={resultsRef} className="space-y-6 pt-2 scroll-mt-24">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-sky-500" />
-                Generated Prompts ({prompts.length})
+              <h2 className="font-display text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-sky-400" />
+                Structured Prompt Output
               </h2>
+              <span className="text-xs text-muted-foreground font-mono font-medium">
+                Ready for Suno &amp; Udio
+              </span>
             </div>
 
             <div className="space-y-6">
               {prompts.map((promptItem, index) => (
                 <Card
                   key={index}
-                  className="relative overflow-hidden border border-border bg-card shadow-xl rounded-2xl"
+                  className="relative overflow-hidden border border-border bg-card shadow-xl rounded-[20px]"
                 >
                   <CardHeader className="pb-3 border-b border-border bg-secondary/60 p-4">
                     <div className="flex items-center justify-between">
@@ -1340,7 +1382,7 @@ export default function Home() {
                         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/15 text-xs font-bold text-sky-400 border border-sky-500/30">
                           {index + 1}
                         </span>
-                        <CardTitle className="text-base font-bold text-foreground">
+                        <CardTitle className="font-display text-base font-bold text-foreground">
                           Prompt {index + 1}
                         </CardTitle>
                       </div>
@@ -1386,9 +1428,10 @@ export default function Home() {
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-4 pt-4 p-5">
+                  <CardContent className="p-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Rhythm Box */}
-                    <div className="p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] space-y-2 shadow-sm">
+                    <div className="p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] space-y-2 shadow-sm flex flex-col justify-between">
                       <div className="flex items-center justify-between">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30">
                           <Activity className="w-3 h-3" />
@@ -1460,6 +1503,7 @@ export default function Home() {
                       <p className="text-sm text-foreground font-semibold leading-relaxed pl-1">
                         {promptItem.details || "N/A"}
                       </p>
+                    </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1605,6 +1649,19 @@ export default function Home() {
               </svg>
               <span className="font-semibold text-xs">GitHub</span>
             </a>
+          </div>
+
+          {/* Engine Compatibility */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="font-medium">Engine Compatibility:</span>
+            {["Suno v3.5/v4", "Udio v1.5", "Music Flow", "Mureka"].map((p) => (
+              <span
+                key={p}
+                className="px-2 py-0.5 rounded border border-border bg-card text-muted-foreground"
+              >
+                {p}
+              </span>
+            ))}
           </div>
         </div>
       </footer>
