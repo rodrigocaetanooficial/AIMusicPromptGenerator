@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { getClientIP } from "@/lib/client-ip";
 import { rateLimit } from "@/lib/rate-limit";
+import { ADMIN_EMAIL } from "@/lib/admin-config";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,14 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // The admin's own visits are never recorded (site owner must not pollute
+    // activity stats). Return success but skip the write.
+    if (
+      session.user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase()
+    ) {
+      return NextResponse.json({ success: true, skipped: true });
     }
 
     const rl = rateLimit(`hb:${getClientIP(request)}`, HB_RATE_LIMIT, HB_WINDOW_MS);

@@ -4,14 +4,18 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 export function PresenceTracker() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const ping = () => {
       if (typeof document === "undefined") return;
       if (document.visibilityState !== "visible") return;
 
+      // Never track the site owner (admin): no heartbeat, no visitor ping.
       if (status === "authenticated") {
+        if ((session?.user as { isAdmin?: boolean } | undefined)?.isAdmin) {
+          return;
+        }
         fetch("/api/user/heartbeat", { method: "POST", keepalive: true }).catch(
           () => {}
         );
@@ -38,7 +42,7 @@ export function PresenceTracker() {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [status]);
+  }, [status, session]);
 
   return null;
 }

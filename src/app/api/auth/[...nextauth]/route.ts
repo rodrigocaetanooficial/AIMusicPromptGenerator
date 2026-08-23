@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { getClientIP } from "@/lib/client-ip";
+import { ADMIN_EMAIL } from "@/lib/admin-config";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -104,11 +105,19 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
       }
+      // Expose a boolean admin flag (never the email itself) so client code
+      // can skip tracking/presence for the site owner.
+      token.isAdmin =
+        typeof token.email === "string" &&
+        token.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase();
       return token;
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         (session.user as { id?: string }).id = token.id as string;
+      }
+      if (session.user) {
+        (session.user as { isAdmin?: boolean }).isAdmin = token.isAdmin as boolean;
       }
       return session;
     },

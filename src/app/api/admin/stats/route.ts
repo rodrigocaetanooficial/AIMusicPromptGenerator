@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminUser } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
 import { format, subDays, startOfDay } from "date-fns";
+import { ADMIN_EMAIL } from "@/lib/admin-config";
 
 export const dynamic = "force-dynamic";
 
@@ -35,11 +36,11 @@ export async function GET(request: NextRequest) {
     });
 
     const active24h = await prisma.user.count({
-      where: { lastActiveAt: { gte: dayAgo } },
+      where: { lastActiveAt: { gte: dayAgo }, email: { not: ADMIN_EMAIL } },
     });
 
     const onlineNow = await prisma.user.count({
-      where: { lastActiveAt: { gte: fiveMinAgo } },
+      where: { lastActiveAt: { gte: fiveMinAgo }, email: { not: ADMIN_EMAIL } },
     });
 
     const anonVisitors24h = await prisma.anonVisitor.count({
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => a.date.localeCompare(b.date));
 
     const onlineUsers = await prisma.user.findMany({
-      where: { lastActiveAt: { gte: dayAgo } },
+      where: { lastActiveAt: { gte: dayAgo }, email: { not: ADMIN_EMAIL } },
       orderBy: { lastActiveAt: "desc" },
       select: {
         id: true,
