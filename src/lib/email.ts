@@ -65,7 +65,42 @@ export async function sendVerificationEmail(email: string, token: string) {
   // PNG format: WebP is not supported by several email clients (Outlook, some Gmail modes).
   const logoUrl = `${baseUrl}/ai-music-light.png`;
 
-  const html = `
+  const body = `
+          <p class="text">Hi!</p>
+          <p class="text">Thanks for signing up for <strong>AI Music Prompt Studio</strong>. Click the button below to confirm your email address and activate your account:</p>
+          <p style="text-align: center; margin: 32px 0;">
+            <a href="${confirmUrl}" target="_blank" style="display:inline-block;background-color:#6335f8;color:#ffffff !important;font-weight:bold;padding:14px 28px;text-decoration:none;border-radius:12px;font-size:15px;">Confirm My Email</a>
+          </p>
+          <p class="text" style="font-size: 13px; color: #6b7280;">Or copy and paste this link into your browser:<br><a href="${confirmUrl}" style="color: #6335f8;">${confirmUrl}</a></p>`;
+
+  const html = buildEmailHtml(logoUrl, "Confirm your email", body);
+  const subject = "Confirm your account - AI Music Prompt Studio";
+
+  return sendWithFallback(email, subject, html);
+}
+
+export async function sendPasswordResetEmail(email: string, token: string) {
+  const baseUrl = process.env.NEXTAUTH_URL || "https://ai-music.viaweb.pro";
+  const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+  const logoUrl = `${baseUrl}/ai-music-light.png`;
+
+  const body = `
+          <p class="text">Hi!</p>
+          <p class="text">We received a request to reset your password for <strong>AI Music Prompt Studio</strong>. Click the button below to choose a new password. This link expires in 1 hour.</p>
+          <p style="text-align: center; margin: 32px 0;">
+            <a href="${resetUrl}" target="_blank" style="display:inline-block;background-color:#6335f8;color:#ffffff !important;font-weight:bold;padding:14px 28px;text-decoration:none;border-radius:12px;font-size:15px;">Reset My Password</a>
+          </p>
+          <p class="text" style="font-size: 13px; color: #6b7280;">Or copy and paste this link into your browser:<br><a href="${resetUrl}" style="color: #6335f8;">${resetUrl}</a></p>
+          <p class="text" style="font-size: 13px; color: #6b7280;">If you didn't request this, you can safely ignore this email.</p>`;
+
+  const html = buildEmailHtml(logoUrl, "Reset your password", body);
+  const subject = "Reset your password - AI Music Prompt Studio";
+
+  return sendWithFallback(email, subject, html);
+}
+
+function buildEmailHtml(logoUrl: string, title: string, body: string) {
+  return `
     <!DOCTYPE html>
     <html>
       <head>
@@ -76,30 +111,24 @@ export async function sendVerificationEmail(email: string, token: string) {
           .logo { display: block; margin: 0 auto 24px auto; height: 48px; width: auto; }
           .title { color: #6335f8; font-size: 22px; font-weight: bold; margin-bottom: 12px; text-align: center; }
           .text { color: #4b5563; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
-          .btn { display: inline-block; background-color: #6335f8; color: #ffffff !important; font-weight: bold; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-size: 15px; }
           .footer { margin-top: 32px; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 16px; text-align: center; }
         </style>
       </head>
       <body>
         <div class="container">
           <img src="${logoUrl}" alt="AI Music Prompt Studio" class="logo" />
-          <div class="title">Confirm your email</div>
-          <p class="text">Hi!</p>
-          <p class="text">Thanks for signing up for <strong>AI Music Prompt Studio</strong>. Click the button below to confirm your email address and activate your account:</p>
-          <p style="text-align: center; margin: 32px 0;">
-            <a href="${confirmUrl}" class="btn" target="_blank">Confirm My Email</a>
-          </p>
-          <p class="text" style="font-size: 13px; color: #6b7280;">Or copy and paste this link into your browser:<br><a href="${confirmUrl}" style="color: #6335f8;">${confirmUrl}</a></p>
+          <div class="title">${title}</div>
+          ${body}
           <div class="footer">
-            AI Music Prompt Studio • If you didn't request this registration, please ignore this email.
+            AI Music Prompt Studio • If you didn't request this, please ignore this email.
           </div>
         </div>
       </body>
     </html>
   `;
+}
 
-  const subject = "Confirm your account - AI Music Prompt Studio";
-
+async function sendWithFallback(email: string, subject: string, html: string) {
   // Preferred path: Resend API (best deliverability). Falls back to SMTP
   // when RESEND_API_KEY is not configured or the Resend call fails.
   try {
@@ -112,7 +141,7 @@ export async function sendVerificationEmail(email: string, token: string) {
   try {
     return await sendViaSmtp(email, subject, html);
   } catch (error) {
-    console.error("Error sending verification email:", error);
+    console.error("Error sending email:", error);
     return { success: false, error: error instanceof Error ? error.message : "Email sending failed" };
   }
 }

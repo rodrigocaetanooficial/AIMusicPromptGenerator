@@ -87,6 +87,7 @@ export default function Home() {
     setModel,
     setProviderApiKey,
     setProviderEnabled,
+    clearProviderKeys,
     setFetchedModels,
     toggleModelDisabled,
     getProviderConfig,
@@ -114,7 +115,7 @@ export default function Home() {
 
   // Auth Dialog state
   const [authOpen, setAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authMode, setAuthMode] = useState<"login" | "register" | "forgot">("login");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authName, setAuthName] = useState("");
@@ -159,6 +160,11 @@ export default function Home() {
             if (data.settings.model) setModel(data.settings.model);
             if (data.settings.theme) setTheme(data.settings.theme);
           }
+          // SECURITY: server is the source of truth once authenticated.
+          // Drop ALL locally-held keys (localStorage may hold keys the user
+          // typed while logged out), then apply exactly what the server
+          // returned — otherwise a new account would inherit local keys.
+          clearProviderKeys();
           if (data.providerConfigs && typeof data.providerConfigs === "object") {
             for (const [pId, cfg] of Object.entries<any>(data.providerConfigs)) {
               if (cfg.apiKey) setProviderApiKey(pId, cfg.apiKey);
@@ -167,11 +173,12 @@ export default function Home() {
             }
           }
           isHydratedRef.current = true;
+          const s = useAppStore.getState();
           lastSyncedRef.current = JSON.stringify({
-            provider: data.settings?.provider || provider,
-            model: data.settings?.model || model,
-            theme: data.settings?.theme || theme,
-            providerConfigs: data.providerConfigs || providerConfigs,
+            provider: s.provider,
+            model: s.model,
+            theme: s.theme,
+            providerConfigs: s.providerConfigs,
           });
         })
         .catch((err) => {
@@ -368,6 +375,26 @@ export default function Home() {
     e.preventDefault();
     setAuthMessage(null);
     setAuthLoading(true);
+
+    if (authMode === "forgot") {
+      try {
+        const res = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: authEmail }),
+        });
+        const data = await res.json();
+        setAuthMessage({
+          type: "success",
+          text: data.message || "If an account exists for this email, a password reset link has been sent.",
+        });
+      } catch (err) {
+        setAuthMessage({ type: "error", text: "An unexpected error occurred." });
+      } finally {
+        setAuthLoading(false);
+      }
+      return;
+    }
 
     if (authMode === "register") {
       try {
@@ -961,13 +988,21 @@ export default function Home() {
         <DialogContent className="sm:max-w-md bg-card border-2 border-border text-card-foreground p-6 shadow-2xl rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2 text-primary">
-              {authMode === "login" ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
-              {authMode === "login" ? "Sign In to Your Account" : "Create Your Account"}
+              {authMode === "login" ? (
+                <LogIn className="w-5 h-5" />
+              ) : authMode === "register" ? (
+                <UserPlus className="w-5 h-5" />
+              ) : (
+                <KeyRound className="w-5 h-5" />
+              )}
+              {authMode === "login" ? "Sign In to Your Account" : authMode === "register" ? "Create Your Account" : "Reset Your Password"}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground font-medium">
               {authMode === "login"
                 ? "Sign in to permanently save your API keys and active models."
-                : "Create an account to keep your settings synced permanently across all devices."}
+                : authMode === "register"
+                ? "Create an account to keep your settings synced permanently across all devices."
+                : "Enter your email and we'll send you a link to choose a new password."}
             </DialogDescription>
           </DialogHeader>
 
@@ -1049,17 +1084,33 @@ export default function Home() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-foreground">Password</Label>
-                <Input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  className="bg-input border-2 border-border text-foreground text-sm h-10 rounded-xl"
-                />
-              </div>
+              {authMode !== "forgot" && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-foreground">Password</Label>
+                    {authMode === "login" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMessage(null);
+                          setAuthMode("forgot");
+                        }}
+                        className="text-xs text-primary hover:underline font-semibold"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    className="bg-input border-2 border-border text-foreground text-sm h-10 rounded-xl"
+                  />
+                </div>
+              )}
 
               <Button
                 type="submit"
@@ -1070,8 +1121,10 @@ export default function Home() {
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : authMode === "login" ? (
                   "Sign In"
-                ) : (
+                ) : authMode === "register" ? (
                   "Create Account & Send Verification Email"
+                ) : (
+                  "Send Reset Link"
                 )}
               </Button>
             </form>
@@ -1082,13 +1135,17 @@ export default function Home() {
                 type="button"
                 onClick={() => {
                   setAuthMessage(null);
-                  setAuthMode(authMode === "login" ? "register" : "login");
+                  if (authMode === "login") setAuthMode("register");
+                  else if (authMode === "register") setAuthMode("login");
+                  else setAuthMode("login");
                 }}
                 className="text-xs text-primary hover:underline font-bold"
               >
                 {authMode === "login"
                   ? "Don't have an account? Register here"
-                  : "Already have an account? Sign in"}
+                  : authMode === "register"
+                  ? "Already have an account? Sign in"
+                  : "Back to sign in"}
               </button>
             </div>
           </div>

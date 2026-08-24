@@ -1,5 +1,8 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // debian-openssl-3.0.x: production VPS target — required when the bundle
+  // is built on Windows, otherwise the query engine is missing at runtime.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -73,6 +76,16 @@ model PendingRegistration {
   createdAt    DateTime @default(now())
 
   @@index([expires])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }
 
 model UserProviderConfig {

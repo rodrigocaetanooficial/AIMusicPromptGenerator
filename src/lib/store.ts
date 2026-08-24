@@ -10,6 +10,7 @@ interface AppState extends Settings {
   setTheme: (theme: "light" | "dark" | "system") => void;
   setProviderApiKey: (providerId: string, apiKey: string) => void;
   setProviderEnabled: (providerId: string, enabled: boolean) => void;
+  clearProviderKeys: () => void; // drop ALL locally-held keys/configs (server is source of truth)
   setFetchedModels: (providerId: string, models: Model[]) => void;
   toggleModelDisabled: (providerId: string, modelId: string, disabled: boolean) => void;
   getProviderConfig: (providerId: string) => ProviderConfig;
@@ -98,6 +99,10 @@ export const useAppStore = create<AppState>()(
             },
           },
         });
+      },
+
+      clearProviderKeys: () => {
+        set({ providerConfigs: {}, apiKey: "" });
       },
 
       setFetchedModels: (providerId, models) => {
