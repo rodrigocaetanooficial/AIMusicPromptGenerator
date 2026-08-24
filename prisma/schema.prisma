@@ -60,6 +60,21 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// Accounts are ONLY created after email verification (Option 2 flow).
+// Registration stores name/password hash here; the User row is born
+// when the verification link is clicked.
+model PendingRegistration {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  token        String   @unique
+  expires      DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([expires])
+}
+
 model UserProviderConfig {
   id             String   @id @default(cuid())
   userId         String

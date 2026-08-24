@@ -15,29 +15,41 @@ export async function GET(req: NextRequest) {
   const cleanEmail = email.toLowerCase().trim();
 
   try {
-    const verificationRecord = await prisma.verificationToken.findFirst({
-      where: {
-        identifier: cleanEmail,
-        token: token,
-      },
+    // The pending registration IS the source of truth: it holds the
+    // password hash and is only created after a successful signup.
+    const pending = await prisma.pendingRegistration.findUnique({
+      where: { email: cleanEmail },
     });
 
-    if (!verificationRecord) {
+    if (!pending || pending.token !== token) {
       return NextResponse.redirect(`${baseUrl}/?error=VerificationTokenNotFound`);
     }
 
-    if (verificationRecord.expires < new Date()) {
+    if (pending.expires < new Date()) {
+      // Expired: remove so the email can be registered again.
+      await prisma.pendingRegistration.delete({ where: { id: pending.id } });
       return NextResponse.redirect(`${baseUrl}/?error=VerificationTokenExpired`);
     }
 
-    await prisma.user.update({
-      where: { email: cleanEmail },
-      data: { emailVerified: new Date() },
+    // Race guard: a Google account may have claimed this email between
+    // registration and verification. Never overwrite an existing user.
+    const existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } });
+    if (existingUser) {
+      await prisma.pendingRegistration.delete({ where: { id: pending.id } });
+      return NextResponse.redirect(`${baseUrl}/?error=VerificationFailed`);
+    }
+
+    // The account is born HERE — only after the email is verified.
+    await prisma.user.create({
+      data: {
+        email: cleanEmail,
+        name: pending.name,
+        passwordHash: pending.passwordHash,
+        emailVerified: new Date(),
+      },
     });
 
-    await prisma.verificationToken.deleteMany({
-      where: { identifier: cleanEmail },
-    });
+    await prisma.pendingRegistration.delete({ where: { id: pending.id } });
 
     return NextResponse.redirect(`${baseUrl}/?verified=true`);
   } catch (error) {

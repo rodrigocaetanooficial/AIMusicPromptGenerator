@@ -31,6 +31,8 @@ import {
   AlertCircle,
   X,
   Braces,
+  ExternalLink,
+  KeyRound,
   Activity,
   Flame,
   Headphones,
@@ -119,24 +121,12 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Save-settings notice (logged-out users): dismissed state persists in localStorage
+  // Save-settings notice (logged-out users): shown on EVERY visit while logged out.
+  // Dismissal lasts for the current page view only (no localStorage persistence).
   const [noticeDismissed, setNoticeDismissed] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const timer = window.setTimeout(() => {
-      setNoticeDismissed(localStorage.getItem("mpg-settings-notice-dismissed") === "1");
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   const dismissNotice = useCallback(() => {
     setNoticeDismissed(true);
-    try {
-      localStorage.setItem("mpg-settings-notice-dismissed", "1");
-    } catch {
-      // localStorage unavailable (private mode etc.) — dismiss for this session only
-    }
   }, []);
 
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -308,6 +298,9 @@ export default function Home() {
   }, [getProviderConfig, provider, providerConfigs]);
 
   const selectedProvider = providers.find((p) => p.id === provider);
+
+  // New-user detection: nothing configured yet (no key on any provider, no model chosen)
+  const needsSetup = !model && !providers.some((p) => !!getProviderConfig(p.id).apiKey);
 
   const handleGenerate = useCallback(async () => {
     if (input.trim().length < 3) {
@@ -638,9 +631,24 @@ export default function Home() {
                                       </Badge>
                                     )}
                                   </div>
-                                  <span className="text-xs text-muted-foreground block font-mono font-medium">
-                                    {pModels.length} models available
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    {p.keyUrl && (
+                                      <a
+                                        href={p.keyUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-semibold"
+                                        title={`Get an API key from ${p.name}`}
+                                      >
+                                        <ExternalLink className="w-3 h-3" />
+                                        Get API key
+                                      </a>
+                                    )}
+                                    <span className="text-xs text-muted-foreground block font-mono font-medium">
+                                      {pModels.length} models available
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
 
@@ -790,6 +798,16 @@ export default function Home() {
                           </div>
                         );
                       })}
+                    {(() => {
+                      const q = providerSearch.trim().toLowerCase();
+                      const found = providers.some((p) => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
+                      if (found) return null;
+                      return (
+                        <div className="p-6 text-center text-sm font-semibold text-muted-foreground border-2 border-dashed border-border rounded-xl">
+                          No provider found for &quot;{providerSearch}&quot;. Clear the search to see all {providers.length} providers.
+                        </div>
+                      );
+                    })() as React.ReactNode}
                   </div>
 
                   {/* Save Settings Footer */}
@@ -890,14 +908,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Save-settings notice for logged-out users (dismissible) */}
+      {/* Save-settings notice for logged-out users (dismissible, shown every visit) */}
       {sessionStatus === "unauthenticated" && !noticeDismissed && (
-        <div className="wrap pt-6">
+        <div className="wrap pt-6 pb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border-2 border-primary/40 bg-primary/10 dark:bg-primary/20 shadow-sm">
             <div className="flex items-start sm:items-center gap-3">
               <UserPlus className="w-5 h-5 text-primary shrink-0 mt-0.5 sm:mt-0" />
               <p className="text-sm font-semibold text-foreground leading-relaxed">
-                Save your preferred AI models, prompt settings, and custom theme across devices. Create a free account or sign in.
+                To save your settings permanently, register and sign in.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
@@ -1096,7 +1114,17 @@ export default function Home() {
             onKeyDown={handleKeyDown}
           />
 
-          {/* Provider & Model */}
+          {/* Provider & Model — new users see a setup button instead of the selects */}
+          {needsSetup ? (
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="w-full h-11 inline-flex items-center justify-center gap-2 text-sm font-bold rounded-[12px] cursor-pointer transition-colors border-2 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary"
+            >
+              <Settings className="w-4 h-4" />
+              Configure AI Provider / Model
+            </button>
+          ) : (
           <div className="selects">
             <div className="select-wrap">
               <Popover open={providerOpen} onOpenChange={setProviderOpen}>
@@ -1267,6 +1295,7 @@ export default function Home() {
             )}
             </div>
           </div>
+          )}
 
           <div className="presets-label">Try an example</div>
           <div className="presets">

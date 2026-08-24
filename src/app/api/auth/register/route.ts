@@ -18,55 +18,35 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = email.toLowerCase().trim();
 
+    // If a VERIFIED account already exists, registration is not possible.
     const existingUser = await prisma.user.findUnique({
       where: { email: cleanEmail },
     });
 
     if (existingUser) {
-      if (existingUser.emailVerified) {
-        return NextResponse.json(
-          { error: "An account with this email already exists. Please sign in." },
-          { status: 400 }
-        );
-      } else {
-        // Resend email verification token
-        const token = uuidv4();
-        await prisma.verificationToken.deleteMany({
-          where: { identifier: cleanEmail },
-        });
-
-        await prisma.verificationToken.create({
-          data: {
-            identifier: cleanEmail,
-            token,
-            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
-          },
-        });
-
-        await sendVerificationEmail(cleanEmail, token);
-
-        return NextResponse.json({
-          message: "Registration pending. A new verification email has been sent to your inbox.",
-          emailSent: true,
-        });
-      }
+      return NextResponse.json(
+        { error: "An account with this email already exists. Please sign in." },
+        { status: 400 }
+      );
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        name: name?.trim() || cleanEmail.split("@")[0],
-        email: cleanEmail,
-        passwordHash,
-        emailVerified: null,
-      },
+    // Clean up expired pending registrations for hygiene.
+    await prisma.pendingRegistration.deleteMany({
+      where: { expires: { lt: new Date() } },
     });
 
+    const passwordHash = await bcrypt.hash(password, 10);
     const token = uuidv4();
-    await prisma.verificationToken.create({
-      data: {
-        identifier: cleanEmail,
+
+    // Upsert the PENDING registration. No User row is created here —
+    // the account is only born when the verification link is clicked.
+    await prisma.pendingRegistration.upsert({
+      where: { email: cleanEmail },
+      update: { name: name?.trim() || cleanEmail.split("@")[0], passwordHash, token, expires: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+      create: {
+        email: cleanEmail,
+        name: name?.trim() || cleanEmail.split("@")[0],
+        passwordHash,
         token,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
       },
@@ -76,7 +56,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       message: "Registration successful! Please check your email to verify and activate your account.",
-      user: { id: user.id, email: user.email, name: user.name },
       emailSent: emailResult.success,
     });
   } catch (error) {

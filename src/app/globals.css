@@ -194,9 +194,7 @@
     color:var(--foreground);font-size:13.5px;font-weight:600;cursor:pointer;transition:.15s;box-shadow:var(--shadow);font-family:var(--font-sans)}
   .btn:hover{border-color:var(--border-strong);transform:translateY(-1px)}
   .btn svg{width:15px;height:15px;color:var(--primary)}
-  .btn-primary{background:var(--foreground);border-color:var(--foreground);color:#fff}
-  .btn-primary:hover{background:#2c2822;color:#fff}
-  .btn-primary svg{color:#fff}
+  /* .btn-primary moved to end of file (outside layers) — must beat Tailwind utilities */
 
   /* hero */
   .hero{text-align:center;padding:84px 0 40px}
@@ -299,3 +297,21 @@
 .dark .btn-json:hover { background: rgba(144, 118, 255, 0.22); color: #c4b5fd; }
 .dark .control-val { background: rgba(144, 118, 255, 0.14); color: #a78bfa; }
 .dark .r-num { background: linear-gradient(135deg, #7c5cff, #d946ef); }
+
+/* Primary header button — unlayered so it beats Tailwind utilities (bg-background etc.) */
+.btn.btn-primary,
+button.btn-primary {
+  background-color: #6335f8 !important;
+  border-color: #6335f8 !important;
+  color: #ffffff !important;
+}
+.btn.btn-primary:hover,
+button.btn-primary:hover {
+  background-color: #5227e0 !important;
+  border-color: #5227e0 !important;
+  color: #ffffff !important;
+}
+.btn.btn-primary svg,
+button.btn-primary svg {
+  color: #ffffff !important;
+}
