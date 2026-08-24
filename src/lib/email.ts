@@ -69,7 +69,7 @@ export async function sendVerificationEmail(email: string, token: string) {
           <p class="text">Hi!</p>
           <p class="text">Thanks for signing up for <strong>AI Music Prompt Studio</strong>. Click the button below to confirm your email address and activate your account:</p>
           <p style="text-align: center; margin: 32px 0;">
-            <a href="${confirmUrl}" target="_blank" style="display:inline-block;background-color:#6335f8;color:#ffffff !important;font-weight:bold;padding:14px 28px;text-decoration:none;border-radius:12px;font-size:15px;">Confirm My Email</a>
+            <a href="${confirmUrl}" target="_blank" style="display:inline-block;background-color:#6335f8;color:#ffffff;font-weight:bold;padding:14px 28px;text-decoration:none;border-radius:12px;font-size:15px;"><span class="btn-text" style="color:#ffffff !important;text-decoration:none;">Confirm My Email</span></a>
           </p>
           <p class="text" style="font-size: 13px; color: #6b7280;">Or copy and paste this link into your browser:<br><a href="${confirmUrl}" style="color: #6335f8;">${confirmUrl}</a></p>`;
 
@@ -88,7 +88,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
           <p class="text">Hi!</p>
           <p class="text">We received a request to reset your password for <strong>AI Music Prompt Studio</strong>. Click the button below to choose a new password. This link expires in 1 hour.</p>
           <p style="text-align: center; margin: 32px 0;">
-            <a href="${resetUrl}" target="_blank" style="display:inline-block;background-color:#6335f8;color:#ffffff !important;font-weight:bold;padding:14px 28px;text-decoration:none;border-radius:12px;font-size:15px;">Reset My Password</a>
+            <a href="${resetUrl}" target="_blank" style="display:inline-block;background-color:#6335f8;color:#ffffff;font-weight:bold;padding:14px 28px;text-decoration:none;border-radius:12px;font-size:15px;"><span class="btn-text" style="color:#ffffff !important;text-decoration:none;">Reset My Password</span></a>
           </p>
           <p class="text" style="font-size: 13px; color: #6b7280;">Or copy and paste this link into your browser:<br><a href="${resetUrl}" style="color: #6335f8;">${resetUrl}</a></p>
           <p class="text" style="font-size: 13px; color: #6b7280;">If you didn't request this, you can safely ignore this email.</p>`;
@@ -112,6 +112,9 @@ function buildEmailHtml(logoUrl: string, title: string, body: string) {
           .title { color: #6335f8; font-size: 22px; font-weight: bold; margin-bottom: 12px; text-align: center; }
           .text { color: #4b5563; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
           .footer { margin-top: 32px; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 16px; text-align: center; }
+          /* Neutralize Gmail's automatic blue link colorization */
+          a:link, a:visited { text-decoration: none; }
+          .btn-text { color: #ffffff !important; }
         </style>
       </head>
       <body>
