@@ -30,7 +30,7 @@
 
 **AI Music Prompt Studio** is a full-stack, state-of-the-art web application crafted to transform simple music ideas into rich, production-grade prompts for **Suno**, **Udio**, **Google Music Flow**, **Mureka**, **Happy Shrimp**, and other leading AI music composition platforms.
 
-Featuring a multi-provider AI engine, automatic model listing, SQLite persistence with NextAuth, per-model toggle switches, and a high-contrast Light/Dark design system, it delivers instant, structured prompts categorized into **Rhythm**, **Style**, and **Technical Details**.
+Featuring a multi-provider AI engine, automatic model listing, SQLite persistence with NextAuth, per-model toggle switches, and the **Aurora** design system (warm light + amethyst deep dark themes), it delivers instant, structured prompts categorized into **Rhythm**, **Style**, and **Technical Details**.
 
 ---
 
@@ -76,8 +76,8 @@ Each prompt is split into three functional layers — **Rhythm** (BPM, time sign
   - Sign in with **Google OAuth** or **Email Verification**.
   - Sync provider configurations, API keys, and model preferences permanently to an encrypted SQLite database.
 
-- 🌓 **Dynamic Light & Dark Theme System**:
-  - Ultra-clear, high-contrast UI with elevated inputs, responsive container width (`max-w-6xl`), and instant real-time theme toggling.
+- 🌓 **Aurora Light / Aurora Deep Themes**:
+  - Warm, airy light theme with soft aurora glows and an amethyst deep dark mode — Sora display type, WCAG AA contrast, dynamic slider fills, and instant real-time theme toggling.
 
 ---
 
