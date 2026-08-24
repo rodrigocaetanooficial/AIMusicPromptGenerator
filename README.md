@@ -1,8 +1,11 @@
 <div align="center">
 
-  <img src="public/favicon.svg" alt="AI Music Prompt Generator Logo" width="100" height="100" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/ai-music-dark.webp" />
+    <img src="public/ai-music-light.webp" alt="AI Music Prompt Studio" width="360" />
+  </picture>
 
-  # 🎵 AI Music Prompt Generator
+  # 🎵 AI Music Prompt Studio
 
   **Empower your musical creativity with production-ready prompts for Suno, Udio, Google Music Flow, Mureka, Happy Shrimp, and more.**
 
@@ -25,7 +28,7 @@
 
 ## 🌟 Overview
 
-**AI Music Prompt Generator** is a full-stack, state-of-the-art web application crafted to transform simple music ideas into rich, production-grade prompts for **Suno**, **Udio**, **Google Music Flow**, **Mureka**, **Happy Shrimp**, and other leading AI music composition platforms.
+**AI Music Prompt Studio** is a full-stack, state-of-the-art web application crafted to transform simple music ideas into rich, production-grade prompts for **Suno**, **Udio**, **Google Music Flow**, **Mureka**, **Happy Shrimp**, and other leading AI music composition platforms.
 
 Featuring a multi-provider AI engine, automatic model listing, SQLite persistence with NextAuth, per-model toggle switches, and a high-contrast Light/Dark design system, it delivers instant, structured prompts categorized into **Rhythm**, **Style**, and **Technical Details**.
 
