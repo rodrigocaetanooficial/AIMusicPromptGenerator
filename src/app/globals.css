@@ -233,8 +233,8 @@
   .select-wrap{position:relative}
   .custom-select{width:100%;height:44px;appearance:none;-webkit-appearance:none;background:var(--secondary);border:1px solid var(--border-input);border-radius:var(--radius-sm);
     padding:0 38px 0 14px;color:var(--foreground);font-size:14px;font-weight:500;outline:none;cursor:pointer;transition:.15s;font-family:var(--font-sans)}
-  .custom-select:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(124,92,255,.12);background:#fff}
-  .custom-select option{background:#fff;color:var(--foreground)}
+  .custom-select:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(124,92,255,.12);background:var(--card)}
+  .custom-select option{background:var(--card);color:var(--foreground)}
   .chev{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--faint);width:15px;height:15px}
   .gen-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;flex-wrap:wrap}
   .hint{font-size:12.5px;color:var(--faint)}

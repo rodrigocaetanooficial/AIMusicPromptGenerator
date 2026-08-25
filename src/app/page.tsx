@@ -20,6 +20,7 @@ import {
   ChevronsUpDown,
   Zap,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Search,
   ShieldCheck,
@@ -305,6 +306,10 @@ export default function Home() {
   }, [getProviderConfig, provider, providerConfigs]);
 
   const selectedProvider = providers.find((p) => p.id === provider);
+
+  // Models available for the currently active provider (respects enabled/disabled state)
+  const activeGroupModels =
+    groupedEnabledModels.find((g) => g.provider.id === provider)?.models ?? [];
 
   // New-user detection: nothing configured yet (no key on any provider, no model chosen)
   const needsSetup = !model && !providers.some((p) => !!getProviderConfig(p.id).apiKey);
@@ -641,8 +646,13 @@ export default function Home() {
                                   size="sm"
                                   onClick={() => setExpandedProvider(isExpanded ? null : p.id)}
                                   className="p-1 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                  aria-label={isExpanded ? `Collapse ${p.name}` : `Expand ${p.name}`}
                                 >
-                                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                  <ChevronRight
+                                    className={`w-4 h-4 transition-transform duration-200 ease-in-out ${
+                                      isExpanded ? "rotate-90" : ""
+                                    }`}
+                                  />
                                 </Button>
                                 <div>
                                   <div className="flex items-center gap-2">
@@ -693,9 +703,16 @@ export default function Home() {
                               </div>
                             </div>
 
-                            {/* Expanded Configuration Section */}
-                            {isExpanded && (
-                              <div className="p-4 border-t-2 border-border bg-secondary/50 space-y-4 rounded-b-xl">
+                            {/* Expanded Configuration Section (animated) */}
+                            <div
+                              className={`grid transition-all duration-300 ease-in-out ${
+                                isExpanded
+                                  ? "grid-rows-[1fr] opacity-100"
+                                  : "grid-rows-[0fr] opacity-0 pointer-events-none"
+                              }`}
+                            >
+                              <div className="overflow-hidden">
+                                <div className="p-4 border-t-2 border-border bg-secondary/50 space-y-4 rounded-b-xl">
                                 {/* API Key Input */}
                                 {p.requiresApiKey && (
                                   <div className="space-y-2">
@@ -820,8 +837,9 @@ export default function Home() {
                                       })}
                                   </div>
                                 </div>
+                                </div>
                               </div>
-                            )}
+                            </div>
                           </div>
                         );
                       })}
@@ -1193,7 +1211,9 @@ export default function Home() {
                     aria-label="AI Provider"
                     className="custom-select flex items-center justify-between pr-3.5"
                   >
-                    <span className="truncate">{providers.find((p) => p.id === provider)?.name || provider}</span>
+                    <span className={`truncate ${provider ? "" : "text-muted-foreground"}`}>
+                      {providers.find((p) => p.id === provider)?.name || (provider ? provider : "Select provider")}
+                    </span>
                     <ChevronsUpDown className="w-4 h-4 shrink-0 opacity-60" />
                   </button>
                 </PopoverTrigger>
@@ -1221,12 +1241,24 @@ export default function Home() {
                                 key={p.id}
                                 value={p.id}
                                 onSelect={() => {
+                                  const group = groupedEnabledModels.find(
+                                    (g) => g.provider.id === p.id
+                                  );
+                                  const pModels = group?.models ?? [];
+                                  const keepCurrent = pModels.some(
+                                    (m) => m.id === model
+                                  );
+                                  // Sync the model dropdown to this provider:
+                                  // keep the current model if it belongs to it, else pick its first enabled model.
                                   setProvider(p.id);
+                                  setModel(keepCurrent ? model : (pModels[0]?.id ?? ""));
                                   const key = getActiveProviderKey(p.id);
                                   if (key) setApiKey(key);
                                   toast({
                                     title: "Provider Switched",
-                                    description: p.name,
+                                    description: pModels.length
+                                      ? p.name
+                                      : `${p.name} (no models enabled)`,
                                   });
                                   setProviderOpen(false);
                                 }}
@@ -1256,7 +1288,7 @@ export default function Home() {
               </Popover>
             </div>
             <div className="select-wrap">
-              {!model || groupedEnabledModels.reduce((acc, g) => acc + g.models.length, 0) === 0 ? (
+              {!model || activeGroupModels.length === 0 ? (
                 <Button
                   type="button"
                   variant="outline"
@@ -1283,16 +1315,18 @@ export default function Home() {
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
                   <Command shouldFilter={false} className="bg-card text-card-foreground">
                     <CommandInput
-                      placeholder="Search model or provider..."
+                      placeholder="Search models..."
                       value={groupedModelQuery}
                       onValueChange={setGroupedModelQuery}
                       className="bg-input text-foreground border-border h-11 font-medium"
                     />
                     <CommandList className="max-h-80">
                       <CommandEmpty className="p-4 text-xs text-muted-foreground text-center font-medium">
-                        No matching models found. Enable more providers in Settings!
+                        No matching models for this provider. Enable more in Settings!
                       </CommandEmpty>
-                      {groupedEnabledModels.map(({ provider: p, models: pModels }) => {
+                      {groupedEnabledModels
+                        .filter((g) => g.provider.id === provider)
+                        .map(({ provider: p, models: pModels }) => {
                         const q = groupedModelQuery.trim().toLowerCase();
                         const filtered = pModels.filter((m) => {
                           if (!q) return true;

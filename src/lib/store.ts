@@ -22,7 +22,7 @@ interface AppState extends Settings {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      provider: "openrouter",
+      provider: "",
       apiKey: "",
       model: "",
       theme: "dark",
