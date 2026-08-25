@@ -311,6 +311,12 @@ export default function Home() {
   const activeGroupModels =
     groupedEnabledModels.find((g) => g.provider.id === provider)?.models ?? [];
 
+  // Only providers with at least one real (non-placeholder) active model
+  // appear in the home provider dropdown.
+  const providersWithActiveModels = groupedEnabledModels.filter((g) =>
+    g.models.some((m) => !m.id.endsWith("-default"))
+  );
+
   // New-user detection: nothing configured yet (no key on any provider, no model chosen)
   const needsSetup = !model && !providers.some((p) => !!getProviderConfig(p.id).apiKey);
 
@@ -1229,8 +1235,12 @@ export default function Home() {
                       className="h-11"
                     />
                     <CommandList>
+                      <CommandEmpty className="p-4 text-xs text-muted-foreground text-center font-medium">
+                        No providers with active models. Enable models in Settings.
+                      </CommandEmpty>
                       <CommandGroup heading="AI Providers">
-                        {providers
+                        {providersWithActiveModels
+                          .map((g) => g.provider)
                           .filter((p) =>
                             p.name.toLowerCase().includes(providerSearch.toLowerCase())
                           )
