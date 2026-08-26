@@ -71,7 +71,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { providers, type GeneratedPrompt, type Model, type Provider } from "@/lib/types";
+import { providers, getProviderDisplayName, type GeneratedPrompt, type Model, type Provider } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
 
 export default function Home() {
@@ -88,6 +88,9 @@ export default function Home() {
     setModel,
     setProviderApiKey,
     setProviderEnabled,
+    setProviderCustomName,
+    setProviderCustomEndpoint,
+    setAllModelsDisabled,
     clearProviderKeys,
     setFetchedModels,
     toggleModelDisabled,
@@ -171,6 +174,11 @@ export default function Home() {
               if (cfg.apiKey) setProviderApiKey(pId, cfg.apiKey);
               if (cfg.enabled !== undefined) setProviderEnabled(pId, cfg.enabled);
               if (Array.isArray(cfg.fetchedModels)) setFetchedModels(pId, cfg.fetchedModels);
+              if (cfg.customName) setProviderCustomName(pId, cfg.customName);
+              if (cfg.customEndpoint) setProviderCustomEndpoint(pId, cfg.customEndpoint);
+              if (Array.isArray(cfg.disabledModels) && cfg.disabledModels.length > 0) {
+                setAllModelsDisabled(pId, cfg.disabledModels, true);
+              }
             }
           }
           isHydratedRef.current = true;
@@ -246,7 +254,11 @@ export default function Home() {
         const response = await fetch(`/api/models`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ provider: targetProviderId, apiKey: effectiveKey }),
+          body: JSON.stringify({
+            provider: targetProviderId,
+            apiKey: effectiveKey,
+            customEndpoint: cfg?.customEndpoint || undefined,
+          }),
         });
         const data = await response.json();
 
@@ -331,6 +343,7 @@ export default function Home() {
     }
 
     const currentKey = getActiveProviderKey(provider);
+    const currentCfg = getProviderConfig(provider);
 
     setIsGenerating(true);
     setPrompts([]);
@@ -346,6 +359,7 @@ export default function Home() {
           provider,
           apiKey: currentKey || undefined,
           model,
+          customEndpoint: currentCfg.customEndpoint || undefined,
         }),
       });
 
@@ -626,6 +640,7 @@ export default function Home() {
                       })
                       .map((p) => {
                         const cfg = getProviderConfig(p.id);
+                        const pName = getProviderDisplayName(p, cfg);
                         const isSelected = provider === p.id;
                         const isExpanded = expandedProvider === p.id;
                         const pModels = getAllModels(p.id);
@@ -662,7 +677,7 @@ export default function Home() {
                                 </Button>
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-bold text-foreground text-base">{p.name}</span>
+                                    <span className="font-bold text-foreground text-base">{pName}</span>
                                     {isSelected && (
                                       <Badge className="bg-primary/20 text-primary dark:text-primary border border-primary/40 text-[10px] font-bold">
                                         Active Default
@@ -719,11 +734,41 @@ export default function Home() {
                             >
                               <div className="overflow-hidden">
                                 <div className="p-4 border-t-2 border-border bg-secondary/50 space-y-4 rounded-b-xl">
+                                {/* Custom provider: user-defined name, endpoint and API key */}
+                                {p.id === "custom" && (
+                                  <div className="space-y-3 pb-3 border-b-2 border-border/60">
+                                    <div className="space-y-2">
+                                      <Label className="text-xs font-bold text-foreground">
+                                        Custom Model Name (display)
+                                      </Label>
+                                      <Input
+                                        type="text"
+                                        placeholder="e.g. My Local Llama, LM Studio, vLLM..."
+                                        value={cfg.customName || ""}
+                                        onChange={(e) => setProviderCustomName(p.id, e.target.value)}
+                                        className="bg-input border-2 border-border text-foreground text-sm rounded-xl h-10"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs font-bold text-foreground">
+                                        Endpoint (OpenAI-compatible base URL)
+                                      </Label>
+                                      <Input
+                                        type="text"
+                                        placeholder="http://127.0.0.1:11434/v1"
+                                        value={cfg.customEndpoint || ""}
+                                        onChange={(e) => setProviderCustomEndpoint(p.id, e.target.value)}
+                                        className="bg-input border-2 border-border text-foreground text-sm font-mono rounded-xl h-10"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+
                                 {/* API Key Input */}
-                                {p.requiresApiKey && (
+                                {(p.requiresApiKey || p.id === "custom") && (
                                   <div className="space-y-2">
                                     <Label className="text-xs font-bold text-foreground">
-                                      {p.name} API Key
+                                      {p.name} API Key{p.id === "custom" ? " (optional)" : ""}
                                     </Label>
                                     <div className="flex gap-2">
                                       <Input
@@ -738,7 +783,7 @@ export default function Home() {
                                           type="button"
                                           variant="secondary"
                                           size="sm"
-                                          disabled={loadingProviderId === p.id || !cfg.apiKey}
+                                          disabled={loadingProviderId === p.id || (p.requiresApiKey && !cfg.apiKey)}
                                           onClick={() => fetchModelsForProvider(p.id, false)}
                                           className="shrink-0 gap-1.5 bg-secondary text-secondary-foreground border-2 border-border font-bold rounded-xl h-10"
                                         >
@@ -760,6 +805,23 @@ export default function Home() {
                                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                       Models ({pModels.length}) - Toggle to Enable / Disable
                                     </Label>
+                                    {pModels.length > 0 && (() => {
+                                      const allDisabled = pModels.every((m) => disabledSet.has(m.id));
+                                      return (
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs font-bold text-muted-foreground">
+                                            {allDisabled ? "All off" : "All on"}
+                                          </span>
+                                          <Switch
+                                            checked={!allDisabled}
+                                            onCheckedChange={(checked) =>
+                                              setAllModelsDisabled(p.id, pModels.map((m) => m.id), !checked)
+                                            }
+                                            aria-label={`Toggle all ${p.name} models`}
+                                          />
+                                        </div>
+                                      );
+                                    })()}
                                   </div>
 
                                   <Input
@@ -1218,7 +1280,11 @@ export default function Home() {
                     className="custom-select flex items-center justify-between pr-3.5"
                   >
                     <span className={`truncate ${provider ? "" : "text-muted-foreground"}`}>
-                      {providers.find((p) => p.id === provider)?.name || (provider ? provider : "Select provider")}
+                      {(() => {
+                        const p = providers.find((pr) => pr.id === provider);
+                        if (!p) return provider || "Select provider";
+                        return getProviderDisplayName(p, getProviderConfig(p.id));
+                      })()}
                     </span>
                     <ChevronsUpDown className="w-4 h-4 shrink-0 opacity-60" />
                   </button>
@@ -1267,8 +1333,8 @@ export default function Home() {
                                   toast({
                                     title: "Provider Switched",
                                     description: pModels.length
-                                      ? p.name
-                                      : `${p.name} (no models enabled)`,
+                                      ? getProviderDisplayName(p, getProviderConfig(p.id))
+                                      : `${getProviderDisplayName(p, getProviderConfig(p.id))} (no models enabled)`,
                                   });
                                   setProviderOpen(false);
                                 }}

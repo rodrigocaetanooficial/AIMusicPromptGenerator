@@ -4,8 +4,23 @@ import { providers } from "@/lib/types";
 
 const modelsSchema = z.object({
   provider: z.string().min(1),
-  apiKey: z.string().min(1, "API key is required"),
+  apiKey: z.string().min(1, "API key is required").optional(),
+  customEndpoint: z.string().trim().url("Invalid endpoint URL").optional(),
 });
+
+// Resolve the base URL for a provider, honoring the custom provider's
+// user-defined endpoint (validated as a real http(s) URL by zod above).
+function resolveBaseUrl(providerId: string, customEndpoint?: string): string {
+  if (providerId === "custom") {
+    if (!customEndpoint) {
+      throw new Error("A custom endpoint URL is required for the Custom / Local provider.");
+    }
+    return customEndpoint.replace(/\/+$/, "");
+  }
+  const providerConfig = providers.find((p) => p.id === providerId);
+  if (!providerConfig) throw new Error("Unknown provider");
+  return providerConfig.baseUrl;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,21 +34,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { provider: providerId, apiKey } = result.data;
-    
-    const providerConfig = providers.find(p => p.id === providerId);
-    if (!providerConfig) {
+    const { provider: providerId, apiKey, customEndpoint } = result.data;
+
+    if (providerId !== "custom" && !apiKey) {
       return NextResponse.json(
-        { models: [], error: "Unknown provider" },
+        { models: [], error: "API key is required" },
+        { status: 400 }
+      );
+    }
+
+    let baseUrl: string;
+    try {
+      baseUrl = resolveBaseUrl(providerId, customEndpoint);
+    } catch (err) {
+      return NextResponse.json(
+        { models: [], error: err instanceof Error ? err.message : "Invalid endpoint" },
         { status: 400 }
       );
     }
 
     try {
-      const response = await fetch(`${providerConfig.baseUrl}/models`, {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
+      const response = await fetch(`${baseUrl}/models`, {
+        headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
       });
 
       if (!response.ok) {
@@ -45,7 +67,7 @@ export async function POST(request: NextRequest) {
       }
 
       const data = await response.json();
-      
+
       const models = data.data
         .map((model: any) => ({
           id: model.id,

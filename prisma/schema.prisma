@@ -96,6 +96,8 @@ model UserProviderConfig {
   enabled        Boolean  @default(true)
   disabledModels String   @default("[]")
   fetchedModels  String   @default("[]")
+  customName     String   @default("")
+  customEndpoint String   @default("")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

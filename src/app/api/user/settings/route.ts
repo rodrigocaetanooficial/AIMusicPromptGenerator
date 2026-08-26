@@ -30,6 +30,8 @@ export async function GET(req: NextRequest) {
         enabled: cfg.enabled,
         disabledModels: JSON.parse(cfg.disabledModels || "[]"),
         fetchedModels: JSON.parse(cfg.fetchedModels || "[]"),
+        customName: cfg.customName || "",
+        customEndpoint: cfg.customEndpoint || "",
       };
     });
 
@@ -99,6 +101,8 @@ export async function POST(req: NextRequest) {
             enabled: cfg.enabled ?? true,
             disabledModels: JSON.stringify(cfg.disabledModels || []),
             fetchedModels: JSON.stringify(cfg.fetchedModels || []),
+            customName: cfg.customName || null,
+            customEndpoint: cfg.customEndpoint || null,
           },
           create: {
             userId: user.id,
@@ -107,6 +111,8 @@ export async function POST(req: NextRequest) {
             enabled: cfg.enabled ?? true,
             disabledModels: JSON.stringify(cfg.disabledModels || []),
             fetchedModels: JSON.stringify(cfg.fetchedModels || []),
+            customName: cfg.customName || null,
+            customEndpoint: cfg.customEndpoint || null,
           },
         });
       }

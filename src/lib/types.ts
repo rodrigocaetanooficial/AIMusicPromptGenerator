@@ -257,6 +257,21 @@ export interface ProviderConfig {
   enabled: boolean;
   disabledModels: string[];
   fetchedModels?: Model[];
+  // Only meaningful for the "custom" provider: user-defined display name
+  // and OpenAI-compatible base URL (e.g. a local llama.cpp / vLLM server).
+  customName?: string;
+  customEndpoint?: string;
+}
+
+// Display name for a provider, honoring the custom provider's user-set name.
+export function getProviderDisplayName(
+  p: Provider,
+  cfg?: Partial<ProviderConfig>,
+): string {
+  if (p.id === "custom" && cfg?.customName && cfg.customName.trim()) {
+    return cfg.customName.trim();
+  }
+  return p.name;
 }
 
 // Settings stored in localStorage

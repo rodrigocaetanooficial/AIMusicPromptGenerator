@@ -12,8 +12,9 @@ const generationSchema = z.object({
   count: z.number().int().min(1).max(10),
   temperature: z.number().min(0).max(2),
   provider: z.string().min(1),
-  apiKey: z.string().min(1),
+  apiKey: z.string().min(1).optional(),
   model: z.string().min(1),
+  customEndpoint: z.string().trim().url("Invalid endpoint URL").optional(),
 });
 
 interface GenerateRequest {
@@ -23,6 +24,7 @@ interface GenerateRequest {
   provider: string;
   apiKey?: string;
   model: string;
+  customEndpoint?: string;
 }
 
 interface GeneratedPrompt {
@@ -156,7 +158,8 @@ async function generateWithOpenAICompatible(
   temperature: number,
   provider: string,
   apiKey: string,
-  model: string
+  model: string,
+  customEndpoint?: string
 ): Promise<GeneratedPrompt[]> {
   const providerConfig = providers.find(p => p.id === provider);
   
@@ -164,7 +167,8 @@ async function generateWithOpenAICompatible(
     throw new Error(`Unknown provider: ${provider}`);
   }
 
-  const baseUrl = providerConfig.baseUrl;
+  // Custom endpoint (user-defined in Settings) overrides the built-in baseUrl
+  const baseUrl = customEndpoint || providerConfig.baseUrl;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -258,19 +262,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { input, count, temperature, provider, apiKey, model } = result.data;
+    const { input, count, temperature, provider, apiKey, model, customEndpoint } = result.data;
 
     let prompts: GeneratedPrompt[];
 
-    if (!apiKey) {
+    // Custom endpoints (e.g. Ollama) may not require a key - send a dummy bearer
+    const effectiveApiKey = apiKey || customEndpoint || "";
+    if (!effectiveApiKey) {
       return NextResponse.json(
         { prompts: [], error: "API Key is required for the selected provider." },
         { status: 400 }
       );
     }
-    
+
     // Use external provider with API key
-    prompts = await generateWithOpenAICompatible(input, count, temperature, provider, apiKey, model);
+    prompts = await generateWithOpenAICompatible(input, count, temperature, provider, effectiveApiKey, model, customEndpoint);
 
     // Log prompt generation — awaited so the audit trail is never dropped,
     // but failure-safe: a logging error must never fail the generation.

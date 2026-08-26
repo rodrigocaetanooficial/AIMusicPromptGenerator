@@ -10,6 +10,9 @@ interface AppState extends Settings {
   setTheme: (theme: "light" | "dark" | "system") => void;
   setProviderApiKey: (providerId: string, apiKey: string) => void;
   setProviderEnabled: (providerId: string, enabled: boolean) => void;
+  setProviderCustomName: (providerId: string, name: string) => void;
+  setProviderCustomEndpoint: (providerId: string, endpoint: string) => void;
+  setAllModelsDisabled: (providerId: string, modelIds: string[], disabled: boolean) => void;
   clearProviderKeys: () => void; // drop ALL locally-held keys/configs (server is source of truth)
   setFetchedModels: (providerId: string, models: Model[]) => void;
   toggleModelDisabled: (providerId: string, modelId: string, disabled: boolean) => void;
@@ -96,6 +99,68 @@ export const useAppStore = create<AppState>()(
             [providerId]: {
               ...currentCfg,
               enabled,
+            },
+          },
+        });
+      },
+
+      setProviderCustomName: (providerId, name) => {
+        const { providerConfigs } = get();
+        const currentCfg = providerConfigs[providerId] || {
+          apiKey: "",
+          enabled: true,
+          disabledModels: [],
+        };
+        set({
+          providerConfigs: {
+            ...providerConfigs,
+            [providerId]: {
+              ...currentCfg,
+              customName: name,
+            },
+          },
+        });
+      },
+
+      setProviderCustomEndpoint: (providerId, endpoint) => {
+        const { providerConfigs } = get();
+        const currentCfg = providerConfigs[providerId] || {
+          apiKey: "",
+          enabled: true,
+          disabledModels: [],
+        };
+        set({
+          providerConfigs: {
+            ...providerConfigs,
+            [providerId]: {
+              ...currentCfg,
+              customEndpoint: endpoint,
+            },
+          },
+        });
+      },
+
+      // Bulk toggle: enable (disabled=false) or disable (disabled=true) a whole
+      // set of models for a provider — used by the "toggle all models" switch.
+      setAllModelsDisabled: (providerId, modelIds, disabled) => {
+        const { providerConfigs } = get();
+        const currentCfg = providerConfigs[providerId] || {
+          apiKey: "",
+          enabled: true,
+          disabledModels: [],
+        };
+        const currentDisabled = new Set(currentCfg.disabledModels || []);
+        if (disabled) {
+          for (const id of modelIds) currentDisabled.add(id);
+        } else {
+          for (const id of modelIds) currentDisabled.delete(id);
+        }
+        set({
+          providerConfigs: {
+            ...providerConfigs,
+            [providerId]: {
+              ...currentCfg,
+              disabledModels: Array.from(currentDisabled),
             },
           },
         });
