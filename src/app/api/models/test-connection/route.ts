@@ -9,14 +9,12 @@ import {
 import { rateLimit } from "@/lib/rate-limit";
 import { getClientIP } from "@/lib/client-ip";
 
-const modelsSchema = z.object({
+const testConnectionSchema = z.object({
   provider: z.string().min(1),
   apiKey: z.string().optional(),
   customEndpoint: z.string().trim().url("Invalid endpoint URL").optional(),
 });
 
-// Resolve the base URL for a provider, honoring the custom provider's
-// user-defined endpoint (already SSRF-validated by the caller).
 function resolveBaseUrl(providerId: string, customEndpoint?: string): string {
   if (providerId === "custom") {
     if (!customEndpoint) {
@@ -31,23 +29,26 @@ function resolveBaseUrl(providerId: string, customEndpoint?: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    // Outbound-fetch endpoint: rate limit per IP so it can't be abused as a
-    // network probe / port scanner via the custom endpoint field.
+    // Tighter limit than /api/models: this endpoint exists purely to probe a
+    // user-supplied URL, so it is the most attractive one to abuse.
     const ip = getClientIP(request);
-    const limited = rateLimit(`models:${ip}`, 30, 60_000);
+    const limited = rateLimit(`test-connection:${ip}`, 10, 60_000);
     if (!limited.ok) {
       return NextResponse.json(
-        { models: [], error: "Too many requests. Please wait a moment and try again." },
+        {
+          success: false,
+          error: "Too many connection tests. Please wait a moment and try again.",
+        },
         { status: 429, headers: { "Retry-After": String(limited.retryAfterSec ?? 60) } }
       );
     }
 
     const rawBody = await request.json();
-    const result = modelsSchema.safeParse(rawBody);
+    const result = testConnectionSchema.safeParse(rawBody);
 
     if (!result.success) {
       return NextResponse.json(
-        { models: [], error: result.error.issues[0]?.message || "Invalid parameters" },
+        { success: false, error: result.error.issues[0]?.message || "Invalid parameters" },
         { status: 400 }
       );
     }
@@ -58,18 +59,21 @@ export async function POST(request: NextRequest) {
     if (providerId === "custom") {
       if (!customEndpoint) {
         return NextResponse.json(
-          { models: [], error: "A custom endpoint URL is required for the Custom / Local provider." },
+          { success: false, error: "Enter an endpoint URL first." },
           { status: 400 }
         );
       }
       const validation = validateCustomEndpoint(customEndpoint);
       if (!validation.valid) {
-        return NextResponse.json({ models: [], error: validation.error }, { status: 400 });
+        return NextResponse.json({ success: false, error: validation.error }, { status: 400 });
       }
     }
 
     if (providerId !== "custom" && !apiKey) {
-      return NextResponse.json({ models: [], error: "API key is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "API key is required" },
+        { status: 400 }
+      );
     }
 
     let baseUrl: string;
@@ -77,7 +81,7 @@ export async function POST(request: NextRequest) {
       baseUrl = resolveBaseUrl(providerId, customEndpoint);
     } catch (err) {
       return NextResponse.json(
-        { models: [], error: err instanceof Error ? err.message : "Invalid endpoint" },
+        { success: false, error: err instanceof Error ? err.message : "Invalid endpoint" },
         { status: 400 }
       );
     }
@@ -86,13 +90,18 @@ export async function POST(request: NextRequest) {
       const response = await fetch(`${baseUrl}/models`, {
         headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
         signal: AbortSignal.timeout(PROVIDER_FETCH_TIMEOUT_MS),
-        redirect: "error", // don't let a redirect bounce us into a private host
+        redirect: "error",
       });
 
       if (!response.ok) {
+        const detail = (await response.text().catch(() => "")).slice(0, 200);
+        const hint =
+          response.status === 401 || response.status === 403
+            ? "Endpoint reachable, but it rejected the credentials (check the API key)."
+            : `Endpoint responded with HTTP ${response.status}.`;
         return NextResponse.json(
-          { models: [], error: `API error: ${response.status}` },
-          { status: response.status }
+          { success: false, error: detail ? `${hint} ${detail}` : hint },
+          { status: 200 } // the test itself succeeded; the result is just negative
         );
       }
 
@@ -104,46 +113,37 @@ export async function POST(request: NextRequest) {
         : null;
 
       if (!rawModels) {
-        return NextResponse.json(
-          {
-            models: [],
-            error:
-              "The endpoint responded but did not return an OpenAI-compatible model list.",
-          },
-          { status: 502 }
-        );
+        return NextResponse.json({
+          success: false,
+          error:
+            "Connected, but the response is not an OpenAI-compatible model list (no `data` array).",
+        });
       }
 
-      const models = rawModels
-        .filter((m: any) => m && typeof m.id === "string")
-        .map((model: any) => ({
-          id: model.id,
-          name: model.name || formatModelName(model.id),
-          description: model.description || `Owned by: ${model.owned_by || "Unknown"}`,
-        }))
-        .sort((a: any, b: any) => a.name.localeCompare(b.name));
-
-      return NextResponse.json({ models });
+      const modelCount = rawModels.length;
+      return NextResponse.json({
+        success: true,
+        message: `Connected. Found ${modelCount} model${modelCount === 1 ? "" : "s"}.`,
+        modelCount,
+      });
     } catch (error) {
       if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
-        return NextResponse.json(
-          { models: [], error: `Connection timeout (${PROVIDER_FETCH_TIMEOUT_MS / 1000}s)` },
-          { status: 504 }
-        );
+        return NextResponse.json({
+          success: false,
+          error: `Connection timed out after ${PROVIDER_FETCH_TIMEOUT_MS / 1000}s. Is the endpoint reachable from the server?`,
+        });
       }
-      console.error(`Error fetching models for ${providerId}:`, error);
-      return NextResponse.json({ models: [], error: "Failed to fetch models" }, { status: 500 });
+      return NextResponse.json({
+        success: false,
+        error: `Could not reach the endpoint: ${
+          error instanceof Error ? error.message : "unknown error"
+        }`,
+      });
     }
   } catch {
-    return NextResponse.json({ models: [], error: "Invalid request payload" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: "Invalid request payload" },
+      { status: 400 }
+    );
   }
-}
-
-function formatModelName(modelId: string): string {
-  return modelId
-    .split(/[-/]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ")
-    .replace(/(\d+b)/gi, "$1")
-    .replace(/(\d+k)/gi, "$1K");
 }

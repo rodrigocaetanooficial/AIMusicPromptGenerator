@@ -6,6 +6,11 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { getClientIP } from "@/lib/client-ip";
+import { validateCustomEndpoint, normalizeEndpoint } from "@/lib/validation";
+
+// Bound outbound LLM calls: generation is slower than model listing, so this
+// is more generous than PROVIDER_FETCH_TIMEOUT_MS.
+const GENERATION_TIMEOUT_MS = 90_000;
 
 const generationSchema = z.object({
   input: z.string().min(3, "Input must be at least 3 characters").max(2000, "Input is too long"),
@@ -168,7 +173,7 @@ async function generateWithOpenAICompatible(
   }
 
   // Custom endpoint (user-defined in Settings) overrides the built-in baseUrl
-  const baseUrl = customEndpoint || providerConfig.baseUrl;
+  const baseUrl = customEndpoint ? normalizeEndpoint(customEndpoint) : providerConfig.baseUrl;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -192,6 +197,8 @@ async function generateWithOpenAICompatible(
       temperature,
       max_tokens: 4000,
     }),
+    // Bound the outbound call so a hanging provider can't tie up the server
+    signal: AbortSignal.timeout(GENERATION_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -264,6 +271,17 @@ export async function POST(request: NextRequest) {
 
     const { input, count, temperature, provider, apiKey, model, customEndpoint } = result.data;
 
+    // Validate custom endpoint with SSRF protection
+    if (provider === "custom" && customEndpoint) {
+      const validation = validateCustomEndpoint(customEndpoint);
+      if (!validation.valid) {
+        return NextResponse.json(
+          { prompts: [], error: validation.error },
+          { status: 400 }
+        );
+      }
+    }
+
     let prompts: GeneratedPrompt[];
 
     // Custom endpoints (e.g. Ollama) may not require a key - send a dummy bearer
@@ -302,6 +320,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ prompts: prompts.slice(0, count) });
   } catch (error) {
     console.error("Generation error:", error);
+    if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
+      return NextResponse.json(
+        { prompts: [], error: "The provider took too long to respond (90s). Try again or pick a faster model." },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
       { prompts: [], error: error instanceof Error ? error.message : "Failed to generate prompts" },
       { status: 500 }

@@ -32,6 +32,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { noAutofillProps } from "@/lib/no-autofill";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -323,7 +324,9 @@ export default function AdminPage() {
                 </label>
                 <Input
                   id="admin-email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
@@ -337,7 +340,9 @@ export default function AdminPage() {
                 </label>
                 <Input
                   id="admin-password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -746,6 +751,8 @@ export default function AdminPage() {
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
+                  {...noAutofillProps("admin-user-search")}
+                  type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name or email..."

@@ -2,8 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { providers, type Settings, type Model, type ProviderConfig } from "./types";
 
+interface CachedModels {
+  models: Model[];
+  timestamp: number;
+  providerId: string;
+}
+
 interface AppState extends Settings {
   providerConfigs: Record<string, ProviderConfig>;
+  // Model cache with TTL (5 minutes)
+  modelCache: Record<string, CachedModels>;
   setProvider: (provider: string) => void;
   setApiKey: (apiKey: string) => void;
   setModel: (model: string) => void;
@@ -12,7 +20,7 @@ interface AppState extends Settings {
   setProviderEnabled: (providerId: string, enabled: boolean) => void;
   setProviderCustomName: (providerId: string, name: string) => void;
   setProviderCustomEndpoint: (providerId: string, endpoint: string) => void;
-  setAllModelsDisabled: (providerId: string, modelIds: string[], disabled: boolean) => void;
+  setAllModelsDisabled: (providerId: string, modelIds: Model['id'][], disabled: boolean) => void;
   clearProviderKeys: () => void; // drop ALL locally-held keys/configs (server is source of truth)
   setFetchedModels: (providerId: string, models: Model[]) => void;
   toggleModelDisabled: (providerId: string, modelId: string, disabled: boolean) => void;
@@ -20,6 +28,10 @@ interface AppState extends Settings {
   getActiveProviderKey: (providerId: string) => string;
   getSelectedProvider: () => typeof providers[0] | undefined;
   getAllModels: (providerId: string) => Model[];
+  // Cache helpers
+  getCachedModels: (providerId: string) => Model[] | null;
+  setCachedModels: (providerId: string, models: Model[]) => void;
+  clearModelCache: (providerId?: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -30,6 +42,7 @@ export const useAppStore = create<AppState>()(
       model: "",
       theme: "dark",
       providerConfigs: {},
+      modelCache: {},
 
       setProvider: (provider) => {
         const { providerConfigs } = get();
@@ -244,6 +257,43 @@ export const useAppStore = create<AppState>()(
         const providerObj = providers.find((p) => p.id === providerId);
         return providerObj?.models || [];
       },
+
+      // Cache helpers with 5-minute TTL
+      getCachedModels: (providerId) => {
+        const { modelCache } = get();
+        const cached = modelCache[providerId];
+        if (!cached) return null;
+        const now = Date.now();
+        const TTL = 5 * 60 * 1000; // 5 minutes
+        if (now - cached.timestamp > TTL) {
+          return null; // Expired
+        }
+        return cached.models;
+      },
+
+      setCachedModels: (providerId, models) => {
+        set({
+          modelCache: {
+            ...get().modelCache,
+            [providerId]: {
+              models,
+              timestamp: Date.now(),
+              providerId,
+            },
+          },
+        });
+      },
+
+      clearModelCache: (providerId?) => {
+        if (providerId) {
+          const { modelCache } = get();
+          const nextCache = { ...modelCache };
+          delete nextCache[providerId];
+          set({ modelCache: nextCache });
+        } else {
+          set({ modelCache: {} });
+        }
+      },
     }),
     {
       name: "music-prompt-generator-settings",
@@ -253,6 +303,7 @@ export const useAppStore = create<AppState>()(
         model: state.model,
         theme: state.theme,
         providerConfigs: state.providerConfigs,
+        // Don't persist cache — it's ephemeral
       }),
     }
   )

@@ -90,6 +90,8 @@ function ResetPasswordForm() {
             <Label className="text-xs font-bold text-foreground">New Password</Label>
             <Input
               type="password"
+              name="new-password"
+              autoComplete="new-password"
               required
               placeholder="••••••••"
               value={password}
@@ -101,6 +103,8 @@ function ResetPasswordForm() {
             <Label className="text-xs font-bold text-foreground">Confirm Password</Label>
             <Input
               type="password"
+              name="confirm-password"
+              autoComplete="new-password"
               required
               placeholder="••••••••"
               value={confirm}

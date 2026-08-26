@@ -44,6 +44,7 @@ import {
   Waves,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { noAutofillProps, AUTOFILL_OFF_ATTRS } from "@/lib/no-autofill";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +53,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Popover,
   PopoverContent,
@@ -98,6 +109,11 @@ export default function Home() {
     getActiveProviderKey,
     getAllModels,
   } = useAppStore();
+  const {
+    getCachedModels,
+    setCachedModels,
+    clearModelCache,
+  } = useAppStore();
 
   const [input, setInput] = useState("");
   const [promptCount, setPromptCount] = useState(3);
@@ -116,6 +132,14 @@ export default function Home() {
   const [providerSearch, setProviderSearch] = useState("");
   const [modelSearchByProvider, setModelSearchByProvider] = useState<Record<string, string>>({});
   const [expandedProvider, setExpandedProvider] = useState<string | null>(provider);
+  // Settings auto-save status indicator (idle | saved | error)
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  // Confirmation dialog for bulk-disabling every model of a provider
+  const [disableAllTarget, setDisableAllTarget] = useState<{
+    providerId: string;
+    providerName: string;
+    modelIds: string[];
+  } | null>(null);
 
   // Auth Dialog state
   const [authOpen, setAuthOpen] = useState(false);
@@ -211,11 +235,32 @@ export default function Home() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: payloadStr,
-        }).catch((err) => console.error("Failed to sync settings:", err));
+        })
+          .then(async (res) => {
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              // Surface validation errors (e.g. blocked SSRF endpoint) to the user
+              lastSyncedRef.current = "";
+              toast({
+                title: "Settings Not Saved",
+                description: data?.error || "Server rejected the settings.",
+                variant: "destructive",
+              });
+              return;
+            }
+            setSaveStatus("saved");
+            setTimeout(() => setSaveStatus("idle"), 2500);
+          })
+          .catch((err) => {
+            console.error("Failed to sync settings:", err);
+            lastSyncedRef.current = "";
+            setSaveStatus("error");
+            setTimeout(() => setSaveStatus("idle"), 3000);
+          });
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [sessionStatus, provider, model, theme, providerConfigs]);
+  }, [sessionStatus, provider, model, theme, providerConfigs, toast]);
 
   // Check URL parameters for email verification notice
   useEffect(() => {
@@ -240,61 +285,77 @@ export default function Home() {
 
   // Fetch models for a specific provider
   const fetchModelsForProvider = useCallback(
-    async (targetProviderId: string, silent = false) => {
-      const pObj = providers.find((p) => p.id === targetProviderId);
-      const cfg = getProviderConfig(targetProviderId);
-      const effectiveKey = cfg?.apiKey || (targetProviderId === provider ? apiKey : "");
+      async (targetProviderId: string, silent = false, forceRefresh = false) => {
+        const pObj = providers.find((p) => p.id === targetProviderId);
+        const cfg = getProviderConfig(targetProviderId);
+        const effectiveKey = cfg?.apiKey || (targetProviderId === provider ? apiKey : "");
 
-      if (!pObj?.supportsModelListing || (pObj.requiresApiKey && !effectiveKey)) {
-        return;
-      }
-
-      setLoadingProviderId(targetProviderId);
-      try {
-        const response = await fetch(`/api/models`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            provider: targetProviderId,
-            apiKey: effectiveKey,
-            customEndpoint: cfg?.customEndpoint || undefined,
-          }),
-        });
-        const data = await response.json();
-
-        if (data.error) {
-          if (!silent) {
-            toast({
-              title: `Failed to fetch models for ${pObj.name}`,
-              description: data.error,
-              variant: "destructive",
-            });
-          }
+        if (!pObj?.supportsModelListing || (pObj.requiresApiKey && !effectiveKey)) {
           return;
         }
 
-        setFetchedModels(targetProviderId, data.models);
+        // Check cache first (unless forceRefresh)
+        if (!forceRefresh) {
+          const cached = getCachedModels(targetProviderId);
+          if (cached) {
+            setFetchedModels(targetProviderId, cached);
+            if (!silent) {
+              toast({
+                title: `Models loaded for ${pObj.name} (cached)`,
+                description: `Found ${cached.length} models`,
+              });
+            }
+            return;
+          }
+        }
 
-        if (!silent) {
-          toast({
-            title: `Models loaded for ${pObj.name}`,
-            description: `Found ${data.models.length} models`,
+        setLoadingProviderId(targetProviderId);
+        try {
+          const response = await fetch(`/api/models`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              provider: targetProviderId,
+              apiKey: effectiveKey,
+              customEndpoint: cfg?.customEndpoint || undefined,
+            }),
           });
+          const data = await response.json();
+
+          if (data.error) {
+            if (!silent) {
+              toast({
+                title: `Failed to fetch models for ${pObj.name}`,
+                description: data.error,
+                variant: "destructive",
+              });
+            }
+            return;
+          }
+
+          setFetchedModels(targetProviderId, data.models);
+          setCachedModels(targetProviderId, data.models);
+
+          if (!silent) {
+            toast({
+              title: `Models loaded for ${pObj.name}`,
+              description: `Found ${data.models.length} models`,
+            });
+          }
+        } catch (error) {
+          if (!silent) {
+            toast({
+              title: `Failed to fetch models for ${pObj.name}`,
+              description: "Could not load models from API",
+              variant: "destructive",
+            });
+          }
+        } finally {
+          setLoadingProviderId(null);
         }
-      } catch (error) {
-        if (!silent) {
-          toast({
-            title: `Failed to fetch models for ${pObj.name}`,
-            description: "Could not load models from API",
-            variant: "destructive",
-          });
-        }
-      } finally {
-        setLoadingProviderId(null);
-      }
-    },
-    [getProviderConfig, provider, apiKey, setFetchedModels, toast]
-  );
+      },
+      [getProviderConfig, provider, apiKey, setFetchedModels, getCachedModels, setCachedModels, toast]
+    );
 
   // Compute enabled providers and their enabled models
   const groupedEnabledModels = useMemo(() => {
@@ -329,8 +390,15 @@ export default function Home() {
     g.models.some((m) => !m.id.endsWith("-default"))
   );
 
-  // New-user detection: nothing configured yet (no key on any provider, no model chosen)
-  const needsSetup = !model && !providers.some((p) => !!getProviderConfig(p.id).apiKey);
+  // New-user detection: nothing configured yet (no key on any provider, no model chosen).
+  //
+  // This reads zustand state that is rehydrated from localStorage, so it is
+  // ALWAYS false-ish on the server and can flip on the client — rendering a
+  // different subtree would be a hydration mismatch. Gate it on `mounted` so
+  // the server and the first client render agree, and only then let the real
+  // value decide which UI to show.
+  const needsSetup =
+    mounted && !model && !providers.some((p) => !!getProviderConfig(p.id).apiKey);
 
   const handleGenerate = useCallback(async () => {
     if (input.trim().length < 3) {
@@ -570,6 +638,18 @@ export default function Home() {
                   <DialogTitle className="text-xl font-bold flex items-center gap-2 text-primary">
                     <Cpu className="w-5 h-5" />
                     Provider & Model Manager
+                    {saveStatus === "saved" && (
+                      <span className="ml-auto flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 normal-case">
+                        <Check className="w-3.5 h-3.5" />
+                        Saved
+                      </span>
+                    )}
+                    {saveStatus === "error" && (
+                      <span className="ml-auto flex items-center gap-1.5 text-xs font-bold text-destructive normal-case">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Save failed
+                      </span>
+                    )}
                   </DialogTitle>
                   <DialogDescription className="text-muted-foreground font-medium">
                     Configure API keys for multiple providers, activate providers, and toggle individual models ON/OFF.
@@ -622,6 +702,8 @@ export default function Home() {
                     <div className="relative">
                       <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-muted-foreground" />
                       <Input
+                        {...noAutofillProps("provider-filter")}
+                        type="text"
                         placeholder="Search providers (Google, OpenRouter, Groq, OpenAI...)"
                         value={providerSearch}
                         onChange={(e) => setProviderSearch(e.target.value)}
@@ -735,45 +817,104 @@ export default function Home() {
                               <div className="overflow-hidden">
                                 <div className="p-4 border-t-2 border-border bg-secondary/50 space-y-4 rounded-b-xl">
                                 {/* Custom provider: user-defined name, endpoint and API key */}
-                                {p.id === "custom" && (
-                                  <div className="space-y-3 pb-3 border-b-2 border-border/60">
-                                    <div className="space-y-2">
-                                      <Label className="text-xs font-bold text-foreground">
-                                        Custom Model Name (display)
-                                      </Label>
-                                      <Input
-                                        type="text"
-                                        placeholder="e.g. My Local Llama, LM Studio, vLLM..."
-                                        value={cfg.customName || ""}
-                                        onChange={(e) => setProviderCustomName(p.id, e.target.value)}
-                                        className="bg-input border-2 border-border text-foreground text-sm rounded-xl h-10"
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-xs font-bold text-foreground">
-                                        Endpoint (OpenAI-compatible base URL)
-                                      </Label>
-                                      <Input
-                                        type="text"
-                                        placeholder="http://127.0.0.1:11434/v1"
-                                        value={cfg.customEndpoint || ""}
-                                        onChange={(e) => setProviderCustomEndpoint(p.id, e.target.value)}
-                                        className="bg-input border-2 border-border text-foreground text-sm font-mono rounded-xl h-10"
-                                      />
-                                    </div>
-                                  </div>
-                                )}
+                                                                {p.id === "custom" && (
+                                                                  <div className="space-y-3 pb-3 border-b-2 border-border/60">
+                                                                    <div className="space-y-2">
+                                                                      <Label className="text-xs font-bold text-foreground">
+                                                                        Custom Model Name (display)
+                                                                      </Label>
+                                                                      <Input
+                                                                        {...noAutofillProps("custom-model-name")}
+                                                                        type="text"
+                                                                        placeholder="e.g. My Local Llama, LM Studio, vLLM..."
+                                                                        value={cfg.customName || ""}
+                                                                        onChange={(e) => setProviderCustomName(p.id, e.target.value)}
+                                                                        className="bg-input border-2 border-border text-foreground text-sm rounded-xl h-10"
+                                                                      />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                      <Label className="text-xs font-bold text-foreground">
+                                                                        Endpoint (OpenAI-compatible base URL)
+                                                                      </Label>
+                                                                      <div className="flex gap-2">
+                                                                        <Input
+                                                                          {...noAutofillProps("custom-endpoint")}
+                                                                          type="text"
+                                                                          inputMode="url"
+                                                                          placeholder="http://127.0.0.1:11434/v1"
+                                                                          value={cfg.customEndpoint || ""}
+                                                                          onChange={(e) => setProviderCustomEndpoint(p.id, e.target.value)}
+                                                                          className="bg-input border-2 border-border text-foreground text-sm font-mono rounded-xl h-10 flex-1"
+                                                                        />
+                                                                        <Button
+                                                                          type="button"
+                                                                          variant="outline"
+                                                                          size="sm"
+                                                                          disabled={!cfg.customEndpoint || loadingProviderId === p.id}
+                                                                          onClick={async () => {
+                                                                            if (!cfg.customEndpoint) return;
+                                                                            setLoadingProviderId(p.id);
+                                                                            try {
+                                                                              const response = await fetch("/api/models/test-connection", {
+                                                                                method: "POST",
+                                                                                headers: { "Content-Type": "application/json" },
+                                                                                body: JSON.stringify({
+                                                                                  provider: "custom",
+                                                                                  customEndpoint: cfg.customEndpoint,
+                                                                                }),
+                                                                              });
+                                                                              const data = await response.json();
+                                                                              if (data.success) {
+                                                                                toast({
+                                                                                  title: "Connection Successful",
+                                                                                  description: data.message || `Connected! Found ${data.modelCount} model(s).`,
+                                                                                });
+                                                                              } else {
+                                                                                toast({
+                                                                                  title: "Connection Failed",
+                                                                                  description: data.error || "Could not connect to endpoint",
+                                                                                  variant: "destructive",
+                                                                                });
+                                                                              }
+                                                                            } catch (err) {
+                                                                              toast({
+                                                                                title: "Connection Error",
+                                                                                description: err instanceof Error ? err.message : "Unknown error",
+                                                                                variant: "destructive",
+                                                                              });
+                                                                            } finally {
+                                                                              setLoadingProviderId(null);
+                                                                            }
+                                                                          }}
+                                                                          className="shrink-0 gap-1.5 bg-secondary text-secondary-foreground border-2 border-border font-bold rounded-xl h-10"
+                                                                        >
+                                                                          {loadingProviderId === p.id ? (
+                                                                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                                                          ) : (
+                                                                            <ShieldCheck className="w-4 h-4 text-primary" />
+                                                                          )}
+                                                                          Test
+                                                                        </Button>
+                                                                      </div>
+                                                                      <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">
+                                                                        Must be an OpenAI-compatible base URL ending in <span className="font-mono">/v1</span>. On the hosted app, localhost and private addresses are blocked for security — run the project locally to reach your own model server.
+                                                                      </p>
+                                                                    </div>
+                                                                  </div>
+                                                                )}
 
                                 {/* API Key Input */}
                                 {(p.requiresApiKey || p.id === "custom") && (
                                   <div className="space-y-2">
                                     <Label className="text-xs font-bold text-foreground">
-                                      {p.name} API Key{p.id === "custom" ? " (optional)" : ""}
+                                      {pName} API Key{p.id === "custom" ? " (optional)" : ""}
                                     </Label>
                                     <div className="flex gap-2">
                                       <Input
+                                        {...noAutofillProps(`api-key-${p.id}`)}
                                         type="password"
-                                        placeholder={`Enter ${p.name} API Key...`}
+                                        autoComplete="new-password"
+                                        placeholder={`Enter ${pName} API Key...`}
                                         value={cfg.apiKey || ""}
                                         onChange={(e) => setProviderApiKey(p.id, e.target.value)}
                                         className="bg-input border-2 border-border text-foreground text-sm font-mono rounded-xl h-10"
@@ -784,7 +925,10 @@ export default function Home() {
                                           variant="secondary"
                                           size="sm"
                                           disabled={loadingProviderId === p.id || (p.requiresApiKey && !cfg.apiKey)}
-                                          onClick={() => fetchModelsForProvider(p.id, false)}
+                                          onClick={() => {
+                                            clearModelCache(p.id);
+                                            fetchModelsForProvider(p.id, false, true);
+                                          }}
                                           className="shrink-0 gap-1.5 bg-secondary text-secondary-foreground border-2 border-border font-bold rounded-xl h-10"
                                         >
                                           {loadingProviderId === p.id ? (
@@ -800,32 +944,44 @@ export default function Home() {
                                 )}
 
                                 {/* Per-Model Toggle Switches */}
-                                <div className="space-y-3 pt-2">
-                                  <div className="flex items-center justify-between">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                                      Models ({pModels.length}) - Toggle to Enable / Disable
-                                    </Label>
-                                    {pModels.length > 0 && (() => {
-                                      const allDisabled = pModels.every((m) => disabledSet.has(m.id));
-                                      return (
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-xs font-bold text-muted-foreground">
-                                            {allDisabled ? "All off" : "All on"}
-                                          </span>
-                                          <Switch
-                                            checked={!allDisabled}
-                                            onCheckedChange={(checked) =>
-                                              setAllModelsDisabled(p.id, pModels.map((m) => m.id), !checked)
-                                            }
-                                            aria-label={`Toggle all ${p.name} models`}
-                                          />
-                                        </div>
-                                      );
-                                    })()}
-                                  </div>
+                                                                <div className="space-y-3 pt-2">
+                                                                  <div className="flex items-center justify-between">
+                                                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                                                      Models ({pModels.length}) - Toggle to Enable / Disable
+                                                                    </Label>
+                                                                    {pModels.length > 0 && (() => {
+                                                                      const allDisabled = pModels.every((m) => disabledSet.has(m.id));
+                                                                      return (
+                                                                        <div className="flex items-center gap-3">
+                                                                          <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">
+                                                                            {allDisabled ? "All off" : "All on"}
+                                                                          </span>
+                                                                          <Switch
+                                                                            checked={!allDisabled}
+                                                                            onCheckedChange={(checked) => {
+                                                                              const newDisabled = !checked;
+                                                                              if (newDisabled) {
+                                                                                // Ask for confirmation before turning every model off
+                                                                                setDisableAllTarget({
+                                                                                  providerId: p.id,
+                                                                                  providerName: pName,
+                                                                                  modelIds: pModels.map((m) => m.id),
+                                                                                });
+                                                                                return;
+                                                                              }
+                                                                              setAllModelsDisabled(p.id, pModels.map((m) => m.id), false);
+                                                                            }}
+                                                                            aria-label={`Toggle all ${pName} models`}
+                                                                          />
+                                                                        </div>
+                                                                      );
+                                                                    })()}
+                                                                  </div>
 
                                   <Input
-                                    placeholder={`Filter ${p.name} models...`}
+                                    {...noAutofillProps(`model-filter-${p.id}`)}
+                                    type="text"
+                                    placeholder={`Filter ${pName} models...`}
                                     value={modelSearch}
                                     onChange={(e) =>
                                       setModelSearchByProvider({ ...modelSearchByProvider, [p.id]: e.target.value })
@@ -1150,6 +1306,8 @@ export default function Home() {
                 <div className="space-y-1">
                   <Label className="text-xs font-bold text-foreground">Name</Label>
                   <Input
+                    name="name"
+                    autoComplete="name"
                     placeholder="Your Name"
                     value={authName}
                     onChange={(e) => setAuthName(e.target.value)}
@@ -1162,6 +1320,8 @@ export default function Home() {
                 <Label className="text-xs font-bold text-foreground">Email Address</Label>
                 <Input
                   type="email"
+                  name="email"
+                  autoComplete="email"
                   required
                   placeholder="name@example.com"
                   value={authEmail}
@@ -1189,6 +1349,8 @@ export default function Home() {
                   </div>
                   <Input
                     type="password"
+                    name="password"
+                    autoComplete={authMode === "register" ? "new-password" : "current-password"}
                     required
                     placeholder="••••••••"
                     value={authPassword}
@@ -1251,6 +1413,9 @@ export default function Home() {
           </div>
           <textarea
             id="music-idea"
+            name="music-idea"
+            {...AUTOFILL_OFF_ATTRS}
+            spellCheck
             placeholder="e.g. a warm lo-fi beat with dusty vinyl, Rhodes piano and a rainy-night mood…"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -1295,6 +1460,7 @@ export default function Home() {
                 >
                   <Command shouldFilter={false} className="bg-card text-card-foreground">
                     <CommandInput
+                      {...noAutofillProps("provider-picker-search")}
                       placeholder="Search providers..."
                       value={providerSearch}
                       onValueChange={setProviderSearch}
@@ -1391,6 +1557,7 @@ export default function Home() {
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-card border-2 border-border shadow-2xl rounded-2xl" align="start">
                   <Command shouldFilter={false} className="bg-card text-card-foreground">
                     <CommandInput
+                      {...noAutofillProps("model-picker-search")}
                       placeholder="Search models..."
                       value={groupedModelQuery}
                       onValueChange={setGroupedModelQuery}
@@ -1415,8 +1582,10 @@ export default function Home() {
 
                         if (filtered.length === 0) return null;
 
+                        const pDisplayName = getProviderDisplayName(p, getProviderConfig(p.id));
+
                         return (
-                          <CommandGroup key={p.id} heading={p.name} className="text-primary font-bold text-xs uppercase px-2 py-1.5">
+                          <CommandGroup key={p.id} heading={pDisplayName} className="text-primary font-bold text-xs uppercase px-2 py-1.5">
                             {filtered.map((m) => {
                               const isSelected = provider === p.id && model === m.id;
                               const key = getActiveProviderKey(p.id);
@@ -1433,7 +1602,7 @@ export default function Home() {
                                     setGroupedModelQuery("");
                                     toast({
                                       title: "Switched Active Model",
-                                      description: `${p.name} → ${m.name}`,
+                                      description: `${pDisplayName} → ${m.name}`,
                                     });
                                   }}
                                   className={`cursor-pointer text-foreground aria-selected:bg-accent flex items-center justify-between p-2.5 rounded-lg border-2 my-1 ${
@@ -1445,7 +1614,7 @@ export default function Home() {
                                     <div className="flex flex-col min-w-0">
                                       <span className="font-bold text-sm truncate text-foreground">{m.name}</span>
                                       <span className="text-[11px] text-muted-foreground font-mono truncate">
-                                        {p.name} • {m.id}
+                                        {pDisplayName} • {m.id}
                                       </span>
                                     </div>
                                   </div>
@@ -1805,6 +1974,52 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Confirm bulk-disable of every model for a provider */}
+      <AlertDialog
+        open={!!disableAllTarget}
+        onOpenChange={(open) => {
+          if (!open) setDisableAllTarget(null);
+        }}
+      >
+        <AlertDialogContent className="bg-card border-2 border-border text-card-foreground rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-lg font-bold">
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              Disable all models?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground font-medium">
+              {disableAllTarget
+                ? `This turns off all ${disableAllTarget.modelIds.length} model(s) for ${disableAllTarget.providerName}. They will disappear from the model picker until you enable them again.`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-2 border-border font-bold rounded-xl">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (disableAllTarget) {
+                  setAllModelsDisabled(
+                    disableAllTarget.providerId,
+                    disableAllTarget.modelIds,
+                    true
+                  );
+                  toast({
+                    title: "All models disabled",
+                    description: `${disableAllTarget.modelIds.length} model(s) turned off for ${disableAllTarget.providerName}.`,
+                  });
+                }
+                setDisableAllTarget(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold rounded-xl"
+            >
+              Disable all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
