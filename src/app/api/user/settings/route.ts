@@ -105,15 +105,18 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Bound the free-text/array fields so a huge payload can't be stored
+        // Bound the free-text/array fields so a huge payload can't be stored.
+        // NOTE: these columns are non-nullable (String @default("")) — sending
+        // `null` makes Prisma reject the whole upsert ("Argument `user` is
+        // missing"), so empty input must be stored as "" instead.
         const customName =
           typeof cfg.customName === "string" && cfg.customName.trim()
             ? cfg.customName.trim().slice(0, 80)
-            : null;
+            : "";
         const customEndpoint =
           typeof cfg.customEndpoint === "string" && cfg.customEndpoint.trim()
             ? cfg.customEndpoint.trim().slice(0, 500)
-            : null;
+            : "";
         const disabledModels = Array.isArray(cfg.disabledModels)
           ? cfg.disabledModels.filter((m: unknown) => typeof m === "string").slice(0, 2000)
           : [];
