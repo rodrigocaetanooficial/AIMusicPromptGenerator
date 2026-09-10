@@ -435,9 +435,14 @@ export default function Home() {
       try {
         data = await response.json();
       } catch {
+        // A 5xx without a JSON body comes from an edge/proxy hop timing out,
+        // not from the provider rejecting the key — don't blame credentials.
+        const timedOut = [502, 503, 504, 524].includes(response.status);
         toast({
           title: "Generation failed",
-          description: `Server returned error (${response.status}). Check your API key.`,
+          description: timedOut
+            ? `The provider did not answer in time (${response.status}). Try again or pick a faster model in Settings.`
+            : `Server returned error (${response.status}). Please try again.`,
           variant: "destructive",
         });
         return;
